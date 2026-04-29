@@ -1,0 +1,94 @@
+# Bittensor Knowledge Base & Subnet Launch Guide
+
+**Version**: April 2026  
+**For Team Internal Use**  
+**Status**: Living Document – Update regularly as protocol evolves (dTAO/Taoflow, neuron registration changes, etc.)
+
+---
+
+## 1. Executive Summary
+
+Bittensor (TAO) is a decentralized protocol creating a peer-to-peer marketplace for machine intelligence. It incentivizes the production of useful AI commodities (inference, compute, agents, training, data, etc.) through crypto-economic mechanisms.
+
+**Core Structure**:
+- One blockchain (**Subtensor**)
+- Up to ~128 active **subnets** (specialized AI markets)
+- Participants: **Miners** (produce work), **Validators** (score work), **Subnet Owners** (design incentives & earn ~18% cut)
+
+**Dynamic TAO (dTAO) + Taoflow** (live since late 2025 / early 2026) transformed the economics:
+- Each subnet has its own **Alpha token** (α) traded against TAO in an AMM liquidity pool.
+- Emissions allocation is now **market-driven** by net TAO inflows (staking demand) rather than root validator votes.
+- Successful subnets attract TAO → higher alpha price → larger share of network emissions → stronger flywheel.
+
+**Reality Check (April 2026)**:
+- External revenue across the network remains modest ($3M–$15M+ annualized estimates) compared to TAO emissions subsidies (hundreds of millions annualized).
+- Compute-heavy subnets (Chutes, Targon, Lium) lead in both emissions and verifiable usage/revenue.
+- Long-term success requires transitioning from subsidy dependence to real product-market fit and revenue recycling.
+
+---
+
+## 2. How Bittensor Works (Post-dTAO)
+
+### Key Concepts
+- **TAO**: Base token. Required to enter any subnet. Drives buy pressure as subnets grow.
+- **Alpha Token (dTAO/α)**: Subnet-specific token issued via AMM pool. Stakers swap TAO for α; rewards paid primarily in α + some TAO.
+- **Emissions (Taoflow)**: Network mints TAO daily. Distribution flows to subnets based on net TAO inflows into their pools. Each subnet also emits its own α tokens locally.
+- **Roles**:
+  - **Miners**: Run models/servers, serve outputs via Axon.
+  - **Validators**: Query miners, score quality, set weights.
+  - **Owners**: Define the "commodity" and scoring rules. Control hyperparameters. Earn ~18% owner cut.
+- **Yuma Consensus**: Aggregates validator scores intelligently.
+
+### Staking Flow
+1. Swap TAO → Subnet α (via pool, incurs small fee ~0.05%).
+2. Delegate α to a validator on that subnet.
+3. Earn yields based on validator/miner performance.
+4. Unstake: Swap α back to TAO (slippage risk in shallow pools).
+
+**Owner Advantage**: ~18% of subnet emissions + governance power + potential revenue share.
+
+---
+
+## 3. Top Subnets Analysis (April 2026 Snapshot)
+
+**Dominant Theme**: Compute & Inference lead due to measurable usage and clearer revenue paths.
+
+| Rank (approx.) | Subnet | Focus | Key Metrics | Notes |
+|----------------|--------|-------|-------------|-------|
+| Top | **Chutes (SN64)** | Serverless GPU Inference ("Decentralized AWS") | 400K+ users, 9T+ tokens processed, high daily requests, ~$1.3M–$5.5M+ external revenue (varies by report), strong emission share | Revenue recycling into alpha buybacks. Often highest usage. 85% cheaper than AWS claim. |
+| Strong | **Targon (SN4)** | Confidential/Enterprise Compute | ~$10.4M projected ARR, powers Dippy (4M+ users), raised $10.5M Series A | Stronger commercial signals than pure subsidies. |
+| Growing | **Lium (SN51)** | GPU Marketplace (H100s etc.) | Growing emission share (recently high single digits), hardware-backed | Competes in compute vertical. |
+| Notable | **Affine (SN120)**, **Ridges AI (SN62)** | Optimization / Autonomous Agents & Coding | Solid alpha MC | Innovation in agentic workflows. |
+| Past Leader | **Templar (SN3)** | Large Model Training (Covenant-72B) | Impacted by Covenant AI operator exit/centralization concerns | Highlighted risks of single-operator dependence. |
+
+**Lessons**:
+- Real usage (tokens processed, requests, users) + revenue recycling create the strongest dTAO flywheels.
+- High subsidy-to-revenue ratios (e.g., 20:1+) remain common — external revenue is the moat.
+- Post-Covenant: Markets reward transparency, doxxed teams, miner diversity, and anti-gaming incentives.
+
+**Monitoring Tools**:
+- taostats.io (emissions, rankings, yields)
+- tao.app / taomarketcap.com / subnetalpha.ai (alpha prices, liquidity, flows)
+
+---
+
+## 4. Revenue Models
+
+### Layer 1: Protocol Subsidies
+- TAO emissions (market-driven by staking inflows)
+- Local α emissions
+- Owner cut (~18%)
+- Validator/miner rewards
+
+### Layer 2: External / Sustainable Revenue (The Real Goal)
+1. **Pay-Per-Use Micropayments** (Most Proven)
+   - API calls for inference/compute (Chutes model)
+   - Fiat on-ramps + token payments
+   - Revenue recycling: Buy α → auto-stake → strengthen pool
+
+2. **Enterprise Contracts**
+   - Dedicated capacity, SLAs, confidential compute (Targon-style)
+   - Pre-sold pipelines
+
+3. **Hybrid Flywheel**
+   - Usage fees → α buybacks →

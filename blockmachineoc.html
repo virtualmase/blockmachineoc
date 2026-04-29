@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Block Machine — Decentralized RPC Infrastructure · Orange County, CA</title>
+  <meta name="description" content="Block Machine operates decentralized, incentivized RPC and archive node infrastructure on Bittensor in Orange County, California. Self-optimizing infrastructure through economic incentives.">
+  <meta name="author" content="Block Machine">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://blockmachineoc.com/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Block Machine OC — Decentralized RPC Infrastructure">
+  <meta property="og:description" content="Orange County's decentralized RPC and archive node network. Built on Bittensor. Self-optimizing through economic incentives.">
+  <meta property="og:url" content="https://blockmachineoc.com/">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "@id": "https://blockmachineoc.com/#blockmachine-oc",
+    "name": "Block Machine OC",
+    "alternateName": "Block Machine Orange County",
+    "url": "https://blockmachineoc.com",
+    "description": "Orange County's decentralized, incentivized RPC and archive node network built on Bittensor. Self-optimizing infrastructure through economic incentives.",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Orange County",
+      "addressRegion": "CA",
+      "addressCountry": "US"
+    },
+    "areaServed": {
+      "@type": "Place",
+      "name": "Orange County, California"
+    },
+    "sameAs": [
+      "https://blockmachine.io"
+    ],
+    "knowsAbout": [
+      "Bittensor",
+      "Decentralized RPC infrastructure",
+      "Archive nodes",
+      "Web3 infrastructure",
+      "Blockchain node operation"
+    ],
+    "parentOrganization": {
+      "@type": "Organization",
+      "name": "Block Machine",
+      "url": "https://blockmachine.io"
+    }
+  }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Syne+Mono&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg:      #05070b;
+      --bg-2:    #090d14;
+      --bg-3:    #0e141f;
+      --bg-4:    #141c2a;
+      --line:    rgba(255,255,255,0.055);
+      --line-2:  rgba(255,255,255,0.10);
+      --line-3:  rgba(255,255,255,0.20);
+      --text:    #dde2ee;
+      --text-2:  #8e98b0;
+      --text-3:  #4e5870;
+      --accent:  #00e5ff;
+      --accent-dim: rgba(0,229,255,0.10);
+      --accent-dim2: rgba(0,229,255,0.05);
+      --green:   #00ff88;
+      --green-dim: rgba(0,255,136,0.08);
+      --amber:   #ffb300;
+      --display: 'Syne', sans-serif;
+      --mono:    'Syne Mono', monospace;
+      --serif:   'Instrument Serif', serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--display);
+      font-weight: 400;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Grid overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--line) 1px, transparent 1px);
+      background-size: 64px 64px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Glow blob */
+    body::after {
+      content: '';
+      position: fixed;
+      top: -20vh;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80vw;
+      height: 60vh;
+      background: radial-gradient(ellipse, rgba(0,229,255,0.04) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(1.25rem, 5vw, 3.5rem);
+      border-bottom: 1px solid var(--line);
+      background: rgba(5,7,11,0.88);
+      backdrop-filter: blur(14px);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .logo-mark {
+      width: 30px;
+      height: 30px;
+      border: 1px solid rgba(0,229,255,0.3);
+      background: var(--accent-dim2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+      flex-shrink: 0;
+    }
+
+    .logo-text {
+      font-family: var(--mono);
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      color: var(--text);
+    }
+
+    .logo-text span {
+      color: var(--accent);
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 1.75rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--text); }
+
+    .nav-cta {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      border: 1px solid rgba(0,229,255,0.3);
+      padding: 0.4rem 1rem;
+      text-decoration: none;
+      background: var(--accent-dim2);
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .nav-cta:hover {
+      background: var(--accent-dim);
+      border-color: rgba(0,229,255,0.6);
+    }
+
+    /* Hamburger */
+    .nav-toggle {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      width: 32px;
+      height: 32px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .nav-toggle span {
+      display: block;
+      width: 20px;
+      height: 1.5px;
+      background: var(--text-2);
+      transition: transform 0.25s ease, opacity 0.2s ease;
+      transform-origin: center;
+    }
+
+    .nav-toggle.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+    .nav-toggle.open span:nth-child(2) { opacity: 0; }
+    .nav-toggle.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+    .mobile-nav {
+      display: none;
+      position: fixed;
+      top: 58px; left: 0; right: 0;
+      background: rgba(5,7,11,0.97);
+      border-bottom: 1px solid var(--line);
+      padding: 1.5rem clamp(1.25rem, 5vw, 3.5rem) 2rem;
+      z-index: 99;
+      flex-direction: column;
+      gap: 0.1rem;
+    }
+
+    .mobile-nav.open { display: flex; }
+
+    .mobile-nav a {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      text-decoration: none;
+      padding: 0.65rem 0;
+      border-bottom: 1px solid var(--line);
+      transition: color 0.15s;
+    }
+
+    .mobile-nav a:last-child { border-bottom: none; }
+    .mobile-nav a:hover { color: var(--accent); }
+
+    @media (max-width: 680px) {
+      .nav-links { display: none; }
+      .nav-cta { display: none; }
+      .nav-toggle { display: flex; }
+    }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 120px clamp(1.25rem, 5vw, 3.5rem) 100px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .hero-tag {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      opacity: 0;
+      animation: fadeUp 0.6s ease 0.1s both;
+    }
+
+    .hero-tag::before {
+      content: '';
+      width: 28px;
+      height: 1px;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .pulse {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 10px var(--green);
+      animation: pulse 2.2s ease infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.4; transform: scale(0.75); }
+    }
+
+    h1 {
+      font-family: var(--display);
+      font-size: clamp(3rem, 8.5vw, 8rem);
+      font-weight: 800;
+      line-height: 0.93;
+      letter-spacing: -0.035em;
+      color: var(--text);
+      max-width: 920px;
+      opacity: 0;
+      animation: fadeUp 0.65s ease 0.2s both;
+    }
+
+    h1 em {
+      font-family: var(--serif);
+      font-style: italic;
+      font-weight: 400;
+      color: var(--text-2);
+    }
+
+    h1 .accent-word {
+      color: var(--accent);
+    }
+
+    .hero-sub {
+      margin-top: 2.5rem;
+      max-width: 520px;
+      font-size: 1rem;
+      color: var(--text-2);
+      line-height: 1.72;
+      opacity: 0;
+      animation: fadeUp 0.6s ease 0.35s both;
+    }
+
+    .hero-actions {
+      margin-top: 2.5rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeUp 0.6s ease 0.45s both;
+    }
+
+    .btn-primary {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--bg);
+      background: var(--accent);
+      border: none;
+      padding: 0.9rem 1.75rem;
+      text-decoration: none;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+      display: inline-block;
+    }
+
+    .btn-primary:hover { opacity: 0.85; transform: translateY(-1px); }
+
+    .btn-ghost {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-2);
+      background: transparent;
+      border: 1px solid var(--line-2);
+      padding: 0.9rem 1.75rem;
+      text-decoration: none;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+      display: inline-block;
+    }
+
+    .btn-ghost:hover { border-color: var(--line-3); color: var(--text); }
+
+    /* Stats strip */
+    .hero-stats {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      border-top: 1px solid var(--line);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      opacity: 0;
+      animation: fadeUp 0.6s ease 0.55s both;
+    }
+
+    @media (max-width: 600px) {
+      .hero-stats { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .stat-cell {
+      padding: 1.5rem clamp(1.25rem, 5vw, 3.5rem);
+      border-right: 1px solid var(--line);
+      transition: background 0.2s;
+    }
+
+    .stat-cell:hover { background: var(--bg-2); }
+    .stat-cell:last-child { border-right: none; }
+
+    .stat-num {
+      font-family: var(--mono);
+      font-size: clamp(1.3rem, 3vw, 1.9rem);
+      font-weight: 500;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+
+    .stat-num .unit {
+      font-size: 0.65em;
+      color: var(--accent);
+      margin-left: 2px;
+    }
+
+    .stat-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-top: 0.3rem;
+    }
+
+    /* ── MARQUEE ── */
+    .marquee-strip {
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      overflow: hidden;
+      padding: 0.8rem 0;
+      background: var(--bg-2);
+      position: relative;
+      z-index: 1;
+    }
+
+    .marquee-track {
+      display: flex;
+      gap: 2.5rem;
+      animation: marquee 30s linear infinite;
+      width: max-content;
+    }
+
+    .marquee-item {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .marquee-item::before {
+      content: '▸';
+      color: var(--accent);
+      font-size: 7px;
+    }
+
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    /* ── SECTIONS ── */
+    section {
+      position: relative;
+      z-index: 1;
+      padding: 5.5rem clamp(1.25rem, 5vw, 3.5rem);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--line);
+      max-width: 80px;
+    }
+
+    h2 {
+      font-family: var(--display);
+      font-size: clamp(1.8rem, 3.5vw, 3rem);
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      line-height: 1.1;
+      color: var(--text);
+      margin-bottom: 2.5rem;
+    }
+
+    h2 em {
+      font-family: var(--serif);
+      font-style: italic;
+      font-weight: 400;
+      color: var(--text-2);
+    }
+
+    /* ── WHAT WE DO ── */
+    .pillars {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--line);
+      border: 1px solid var(--line);
+    }
+
+    @media (max-width: 760px) {
+      .pillars { grid-template-columns: 1fr; }
+    }
+
+    .pillar {
+      background: var(--bg);
+      padding: 2.5rem;
+      transition: background 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pillar::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 2px;
+      height: 0;
+      background: var(--accent);
+      transition: height 0.4s ease;
+    }
+
+    .pillar:hover { background: var(--bg-2); }
+    .pillar:hover::after { height: 100%; }
+
+    .pillar-idx {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      color: var(--accent);
+      margin-bottom: 1.25rem;
+    }
+
+    .pillar-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.75rem;
+      letter-spacing: -0.01em;
+    }
+
+    .pillar-desc {
+      font-size: 0.875rem;
+      color: var(--text-2);
+      line-height: 1.68;
+    }
+
+    /* ── LOCAL PRESENCE ── */
+    .local-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: start;
+    }
+
+    @media (max-width: 760px) {
+      .local-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+    }
+
+    .local-body p {
+      font-size: 0.95rem;
+      color: var(--text-2);
+      line-height: 1.75;
+      margin-bottom: 1rem;
+      max-width: 54ch;
+    }
+
+    .oc-card {
+      border: 1px solid var(--line-2);
+      background: var(--bg-2);
+    }
+
+    .oc-card-header {
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .oc-card-title {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-3);
+    }
+
+    .oc-badge {
+      font-family: var(--mono);
+      font-size: 8px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--green);
+      border: 1px solid rgba(0,255,136,0.25);
+      padding: 0.15rem 0.5rem;
+      background: var(--green-dim);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .oc-rows {
+      padding: 0;
+    }
+
+    .oc-row {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      border-bottom: 1px solid var(--line);
+      transition: background 0.15s;
+    }
+
+    .oc-row:last-child { border-bottom: none; }
+    .oc-row:hover { background: var(--bg-3); }
+
+    .oc-key {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      padding: 1rem 2rem;
+      border-right: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+    }
+
+    .oc-val {
+      font-size: 0.875rem;
+      color: var(--text-2);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+    }
+
+    /* ── BITTENSOR ── */
+    .bittensor-block {
+      border: 1px solid var(--line-2);
+      background: var(--bg-2);
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .bittensor-block::before {
+      content: '';
+      position: absolute;
+      top: 0; right: 0;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(0,229,255,0.05) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .bittensor-block p {
+      font-size: 0.95rem;
+      color: var(--text-2);
+      line-height: 1.75;
+      max-width: 66ch;
+      margin-bottom: 1rem;
+    }
+
+    .bittensor-block p:last-child { margin-bottom: 0; }
+
+    .inline-accent {
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    /* Specs table */
+    .spec-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+      margin-top: 2rem;
+    }
+
+    .spec-table th {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      text-align: left;
+      padding: 0.75rem 1.25rem;
+      border-bottom: 1px solid var(--line);
+      font-weight: 500;
+    }
+
+    .spec-table td {
+      padding: 0.9rem 1.25rem;
+      border-bottom: 1px solid var(--line);
+      color: var(--text-2);
+      vertical-align: top;
+      line-height: 1.55;
+    }
+
+    .spec-table tr:hover td { background: var(--bg-2); }
+
+    .spec-table .col-feature {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .status-dot {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--green);
+    }
+
+    .status-dot::before {
+      content: '';
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+    }
+
+    /* ── CONTACT ── */
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: start;
+    }
+
+    @media (max-width: 680px) {
+      .contact-grid { grid-template-columns: 1fr; }
+    }
+
+    .contact-body p {
+      font-size: 0.95rem;
+      color: var(--text-2);
+      line-height: 1.75;
+      margin-bottom: 1.5rem;
+      max-width: 50ch;
+    }
+
+    .contact-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .contact-link {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: var(--text-2);
+      text-decoration: none;
+      border: 1px solid var(--line);
+      padding: 0.85rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+    }
+
+    .contact-link:hover {
+      border-color: rgba(0,229,255,0.3);
+      color: var(--accent);
+      background: var(--accent-dim2);
+    }
+
+    .contact-link::after { content: '↗'; font-size: 13px; }
+
+    .wallet-block {
+      border: 1px solid var(--line);
+      background: var(--bg-2);
+    }
+
+    .wallet-header {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--line);
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-3);
+    }
+
+    .wallet-row {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .wallet-row:last-child { border-bottom: none; }
+
+    .wallet-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.4rem;
+    }
+
+    .wallet-addr {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text-2);
+      word-break: break-all;
+      line-height: 1.6;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      position: relative;
+      z-index: 1;
+      padding: 3rem clamp(1.25rem, 5vw, 3.5rem);
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 3rem;
+    }
+
+    @media (max-width: 680px) {
+      footer { grid-template-columns: 1fr; gap: 2rem; }
+    }
+
+    .footer-desc {
+      font-size: 0.85rem;
+      color: var(--text-3);
+      line-height: 1.7;
+      margin: 1rem 0;
+    }
+
+    .footer-meta {
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--text-3);
+      line-height: 2;
+      letter-spacing: 0.06em;
+    }
+
+    .footer-meta a {
+      color: var(--text-3);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-meta a:hover { color: var(--accent); }
+
+    .footer-col-title {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 1.25rem;
+    }
+
+    .footer-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .footer-links a {
+      font-size: 0.875rem;
+      color: var(--text-2);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--accent); }
+
+    .footer-bottom {
+      border-top: 1px solid var(--line);
+      padding: 1.5rem clamp(1.25rem, 5vw, 3.5rem);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .footer-bottom-text {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      color: var(--text-3);
+    }
+
+    .footer-bottom-links {
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    .footer-bottom-links a {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      text-decoration: none;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+
+    .footer-bottom-links a:hover { opacity: 1; }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in {
+      opacity: 0;
+      transform: translateY(14px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="/" class="logo">
+      <span class="logo-mark">BM</span>
+      <span class="logo-text">block<span>machine</span> <span style="color:var(--text-3);font-size:10px;">OC</span></span>
+    </a>
+    <div class="nav-right">
+      <ul class="nav-links">
+        <li><a href="#infrastructure">Infrastructure</a></li>
+        <li><a href="#local">Orange County</a></li>
+        <li><a href="#bittensor">Bittensor</a></li>
+        <li><a href="#contact">Contact</a></li>
+        <li><a href="https://blockmachine.io" target="_blank" rel="noopener">blockmachine.io →</a></li>
+      </ul>
+      <a href="#contact" class="nav-cta">Connect</a>
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <nav class="mobile-nav" aria-label="Mobile navigation">
+    <a href="#infrastructure">Infrastructure</a>
+    <a href="#local">Orange County</a>
+    <a href="#bittensor">Bittensor</a>
+    <a href="#contact">Contact</a>
+    <a href="https://blockmachine.io" target="_blank" rel="noopener">blockmachine.io →</a>
+  </nav>
+
+  <!-- HERO -->
+  <div class="hero">
+    <p class="hero-tag">
+      <span class="pulse"></span>
+      Nodes active · Orange County, CA
+    </p>
+    <h1>Self-optimizing<br><em>infrastructure</em><br>for <span class="accent-word">OC.</span></h1>
+    <p class="hero-sub">Block Machine operates decentralized, incentivized RPC and archive node infrastructure on Bittensor — now with a local presence in Orange County, California. Economic incentives drive performance. No intermediaries.</p>
+    <div class="hero-actions">
+      <a href="#contact" class="btn-primary">Get RPC Access</a>
+      <a href="#bittensor" class="btn-ghost">How it works</a>
+    </div>
+
+    <div class="hero-stats">
+      <div class="stat-cell">
+        <div class="stat-num">99.99<span class="unit">%</span></div>
+        <div class="stat-label">Uptime SLA</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">&lt;20<span class="unit">ms</span></div>
+        <div class="stat-label">Avg latency</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">TAO</div>
+        <div class="stat-label">Incentive layer</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">OC<span class="unit"> CA</span></div>
+        <div class="stat-label">Local presence</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MARQUEE -->
+  <div class="marquee-strip" aria-hidden="true">
+    <div class="marquee-track">
+      <span class="marquee-item">Decentralized RPC</span>
+      <span class="marquee-item">Bittensor Subnet</span>
+      <span class="marquee-item">Archive Nodes</span>
+      <span class="marquee-item">Orange County CA</span>
+      <span class="marquee-item">Self-Optimizing</span>
+      <span class="marquee-item">Economic Incentives</span>
+      <span class="marquee-item">TAO Network</span>
+      <span class="marquee-item">Low Latency</span>
+      <span class="marquee-item">Web3 Infrastructure</span>
+      <span class="marquee-item">No Intermediaries</span>
+      <span class="marquee-item">Decentralized RPC</span>
+      <span class="marquee-item">Bittensor Subnet</span>
+      <span class="marquee-item">Archive Nodes</span>
+      <span class="marquee-item">Orange County CA</span>
+      <span class="marquee-item">Self-Optimizing</span>
+      <span class="marquee-item">Economic Incentives</span>
+      <span class="marquee-item">TAO Network</span>
+      <span class="marquee-item">Low Latency</span>
+      <span class="marquee-item">Web3 Infrastructure</span>
+      <span class="marquee-item">No Intermediaries</span>
+    </div>
+  </div>
+
+  <!-- INFRASTRUCTURE -->
+  <section id="infrastructure">
+    <div class="section-label fade-in">01 — Infrastructure</div>
+    <h2 class="fade-in">What Block Machine <em>runs.</em></h2>
+    <div class="pillars fade-in">
+      <div class="pillar">
+        <div class="pillar-idx">01 — RPC Nodes</div>
+        <div class="pillar-title">Remote Procedure Call Infrastructure</div>
+        <p class="pillar-desc">High-throughput RPC endpoints for Web3 applications. Block Machine nodes process requests with sub-20ms latency, serving dApps, wallets, and protocols that need reliable, decentralized access to blockchain state.</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-idx">02 — Archive Nodes</div>
+        <div class="pillar-title">Full Historical State Storage</div>
+        <p class="pillar-desc">Complete blockchain history from genesis. Archive nodes store every state transition, enabling deep analytics, historical queries, and compliance use cases that light nodes cannot support.</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-idx">03 — Incentive Layer</div>
+        <div class="pillar-title">Bittensor-Powered Optimization</div>
+        <p class="pillar-desc">Bittensor's TAO incentive layer rewards operators who maintain performance and penalizes underperformers. The network self-optimizes continuously — no central coordinator required.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOCAL PRESENCE -->
+  <section id="local">
+    <div class="section-label fade-in">02 — Orange County</div>
+    <h2 class="fade-in">Built for <em>Southern California.</em></h2>
+    <div class="local-grid fade-in">
+      <div class="local-body">
+        <p>Block Machine OC brings decentralized infrastructure within reach of Orange County's growing Web3 developer community. Local operations mean lower latency for SoCal-based applications and direct access to a team operating on the same time zone.</p>
+        <p>Whether you're building a DeFi protocol, running a validator, or need reliable RPC access for production workloads — Block Machine OC is your local infrastructure partner on the Bittensor network.</p>
+        <p>Signal architecture and entity strategy by <a href="https://au-re.org" style="color:var(--accent);text-decoration:none;">AURE</a>.</p>
+      </div>
+      <div class="oc-card">
+        <div class="oc-card-header">
+          <span class="oc-card-title">OC Node Status</span>
+          <span class="oc-badge"><span class="pulse" style="width:5px;height:5px;"></span>Operational</span>
+        </div>
+        <div class="oc-rows">
+          <div class="oc-row">
+            <span class="oc-key">Region</span>
+            <span class="oc-val">Orange County, CA</span>
+          </div>
+          <div class="oc-row">
+            <span class="oc-key">Network</span>
+            <span class="oc-val">Bittensor / TAO</span>
+          </div>
+          <div class="oc-row">
+            <span class="oc-key">Node types</span>
+            <span class="oc-val">RPC · Archive</span>
+          </div>
+          <div class="oc-row">
+            <span class="oc-key">Uptime</span>
+            <span class="oc-val"><span class="status-dot">99.99% SLA</span></span>
+          </div>
+          <div class="oc-row">
+            <span class="oc-key">Latency</span>
+            <span class="oc-val">&lt; 20ms avg</span>
+          </div>
+          <div class="oc-row">
+            <span class="oc-key">Contact</span>
+            <span class="oc-val"><a href="https://blockmachine.io" style="color:var(--accent);text-decoration:none;font-size:11px;font-family:var(--mono);">blockmachine.io →</a></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BITTENSOR -->
+  <section id="bittensor">
+    <div class="section-label fade-in">03 — Bittensor</div>
+    <h2 class="fade-in">The incentive layer that <em>drives performance.</em></h2>
+    <div class="bittensor-block fade-in">
+      <p>Bittensor is a decentralized network that uses economic incentives to produce digital commodities — including compute, bandwidth, and infrastructure. Miners (node operators) compete to provide the best service; validators score their performance; TAO rewards flow to those who deliver.</p>
+      <p>Block Machine harnesses this mechanism to forge <span class="inline-accent">self-optimizing RPC infrastructure</span>. The network continuously rebalances toward the highest-performing operators without any centralized orchestration. Underperformance is economically penalized. Excellence is economically rewarded.</p>
+      <p>The result is infrastructure that gets better over time — not through manual maintenance cycles, but through the continuous pressure of market incentives operating at the protocol layer.</p>
+    </div>
+
+    <table class="spec-table fade-in">
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>Traditional RPC</th>
+          <th>Block Machine / Bittensor</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="col-feature">Optimization mechanism</td>
+          <td>Manual maintenance</td>
+          <td>Continuous economic incentives</td>
+        </tr>
+        <tr>
+          <td class="col-feature">Trust model</td>
+          <td>Centralized provider</td>
+          <td>Decentralized validator consensus</td>
+        </tr>
+        <tr>
+          <td class="col-feature">Performance accountability</td>
+          <td>SLA contracts</td>
+          <td>On-chain TAO reward / slash</td>
+        </tr>
+        <tr>
+          <td class="col-feature">Censorship resistance</td>
+          <td>Low</td>
+          <td>High — no single point of control</td>
+        </tr>
+        <tr>
+          <td class="col-feature">Geographic distribution</td>
+          <td>Provider-determined</td>
+          <td>Operator-determined, globally distributed</td>
+        </tr>
+        <tr>
+          <td class="col-feature">Uptime guarantee</td>
+          <td>Provider SLA</td>
+          <td><span class="status-dot">99.99% incentive-enforced</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="section-label fade-in">04 — Contact</div>
+    <h2 class="fade-in">Get access. <em>Start building.</em></h2>
+    <div class="contact-grid fade-in">
+      <div class="contact-body">
+        <p>Block Machine OC serves Web3 developers, protocol teams, and enterprises in Orange County and Southern California who need reliable, decentralized RPC infrastructure. Reach the team through the main Block Machine site.</p>
+        <div class="contact-links">
+          <a href="https://blockmachine.io" class="contact-link" target="_blank" rel="noopener">blockmachine.io — Main site</a>
+          <a href="https://blockmachine.io" class="contact-link" target="_blank" rel="noopener">Request RPC access</a>
+          <a href="https://au-re.org" class="contact-link" target="_blank" rel="noopener">AURE — Signal architecture partner</a>
+        </div>
+      </div>
+      <div>
+        <div class="wallet-block">
+          <div class="wallet-header">Support the network · Donations</div>
+          <div class="wallet-row">
+            <div class="wallet-label">Bittensor (TAO)</div>
+            <div class="wallet-addr">5FvdtwsoEw5bVq4qhwzaKdva2527yPry6usTqu7ZL13gfXpn</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div>
+      <a href="/" class="logo" style="margin-bottom:1rem;display:inline-flex;">
+        <span class="logo-mark">BM</span>
+        <span class="logo-text" style="margin-left:10px;">block<span>machine</span> OC</span>
+      </a>
+      <p class="footer-desc">Decentralized RPC and archive node infrastructure on Bittensor. Orange County, California.</p>
+      <div class="footer-meta">
+        Orange County, CA ·
+        <a href="https://blockmachine.io" target="_blank" rel="noopener">blockmachine.io</a><br>
+        Signal architecture: <a href="https://au-re.org" target="_blank" rel="noopener">AURE</a>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title">Network</div>
+      <ul class="footer-links">
+        <li><a href="https://blockmachine.io" target="_blank" rel="noopener">blockmachine.io</a></li>
+        <li><a href="https://bittensor.com" target="_blank" rel="noopener">Bittensor</a></li>
+        <li><a href="https://au-re.org" target="_blank" rel="noopener">AURE</a></li>
+        <li><a href="https://autonomousresourcemanagement.com" target="_blank" rel="noopener">ARM</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Pages</div>
+      <ul class="footer-links">
+        <li><a href="#infrastructure">Infrastructure</a></li>
+        <li><a href="#local">Orange County</a></li>
+        <li><a href="#bittensor">Bittensor</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+  </footer>
+
+  <div class="footer-bottom">
+    <span class="footer-bottom-text">© 2026 Block Machine OC · Orange County, CA · blockmachineoc.com</span>
+    <div class="footer-bottom-links">
+      <a href="/llms.txt">llms.txt</a>
+      <a href="/schema.json">schema.json</a>
+      <a href="/sitemap.xml">sitemap.xml</a>
+    </div>
+  </div>
+
+  <script>
+    const toggle = document.querySelector('.nav-toggle');
+    const mobileNav = document.querySelector('.mobile-nav');
+    toggle.addEventListener('click', () => {
+      const open = mobileNav.classList.toggle('open');
+      toggle.classList.toggle('open', open);
+      toggle.setAttribute('aria-expanded', open);
+    });
+    mobileNav.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => {
+        mobileNav.classList.remove('open');
+        toggle.classList.remove('open');
+        toggle.setAttribute('aria-expanded', false);
+      });
+    });
+    document.addEventListener('click', e => {
+      if (!toggle.contains(e.target) && !mobileNav.contains(e.target)) {
+        mobileNav.classList.remove('open');
+        toggle.classList.remove('open');
+        toggle.setAttribute('aria-expanded', false);
+      }
+    });
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(el => {
+        if (el.isIntersecting) { el.target.classList.add('visible'); observer.unobserve(el.target); }
+      });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+  </script>
+
+</body>
+</html>

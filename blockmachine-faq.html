@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FAQ — Blockmachine | Blockchain RPC Infrastructure Questions Answered</title>
+<meta name="description" content="Frequently asked questions about Blockmachine's verified blockchain RPC service. Covers pricing, correctness verification, Bittensor integration, rate limits, error codes, multi-chain support, and API keys.">
+<meta name="keywords" content="blockchain RPC FAQ, Bittensor RPC, verified blockchain nodes, JSON-RPC questions, blockmachine pricing, RPC error codes, archive node access, decentralized RPC">
+<link rel="canonical" href="https://blockmachine.io/faq">
+
+<!-- Open Graph -->
+<meta property="og:title" content="FAQ — Blockmachine | Verified Blockchain RPC">
+<meta property="og:description" content="Everything you need to know about Blockmachine's fast, verified, Bittensor-powered RPC infrastructure.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://blockmachine.io/faq">
+
+<!-- GEO / LLM Citation Meta -->
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+<meta name="author" content="Blockmachine">
+<meta name="topic" content="Blockchain RPC Infrastructure">
+
+<!-- FAQPage + BreadcrumbList + WebPage Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": "https://blockmachine.io/faq#webpage",
+      "url": "https://blockmachine.io/faq",
+      "name": "Blockmachine FAQ — Blockchain RPC Questions Answered",
+      "description": "Frequently asked questions about Blockmachine's Bittensor-powered, independently verified blockchain RPC service.",
+      "inLanguage": "en-US",
+      "isPartOf": { "@id": "https://blockmachine.io/#website" },
+      "breadcrumb": { "@id": "https://blockmachine.io/faq#breadcrumb" }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://blockmachine.io/faq#breadcrumb",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://blockmachine.io" },
+        { "@type": "ListItem", "position": 2, "name": "FAQ", "item": "https://blockmachine.io/faq" }
+      ]
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://blockmachine.io/#org",
+      "name": "Blockmachine",
+      "url": "https://blockmachine.io",
+      "description": "Fast, verified, decentralized blockchain RPC infrastructure powered by Bittensor.",
+      "contactPoint": { "@type": "ContactPoint", "email": "team@blockmachine.io", "contactType": "technical support" }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://blockmachine.io/faq#faqpage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is Blockmachine?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Blockmachine is a blockchain RPC (Remote Procedure Call) infrastructure provider powered by Bittensor. It offers fast, independently verified access to full and archive nodes across multiple chains via a standard JSON-RPC interface. Unlike centralized providers, Blockmachine routes requests through a network of competing miners whose responses are verified for correctness against trusted reference nodes." }
+        },
+        {
+          "@type": "Question",
+          "name": "How does Blockmachine verify blockchain RPC responses?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Blockmachine uses deterministic verification. At the end of every epoch (360 blocks, roughly 72 minutes), validators sample logged miner responses and re-execute the same requests against trusted reference infrastructure. If a miner's response hash does not match the reference node's hash, that miner is permanently banned — not penalized, not warned. This means every response you receive has been independently checked against ground truth." }
+        },
+        {
+          "@type": "Question",
+          "name": "What blockchain chains does Blockmachine support?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Blockmachine currently supports Bittensor (TAO) as its primary chain, with Ethereum and BSC (Binance Smart Chain) support planned for Phase 5. Additional EVM-compatible chains will follow. All supported chains are accessible via standard JSON-RPC — no custom SDK or proprietary API is required." }
+        },
+        {
+          "@type": "Question",
+          "name": "How does Blockmachine pricing work?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Blockmachine charges per Request Unit (RU) — a normalized measure of computational work. Simple queries cost fewer RUs; complex archive or trace calls cost more. Plans start at Free ($0/mo, 10K RU), Pro ($25/mo, 20M RU), Business ($125/mo, 100M RU), and Enterprise ($999/mo, 1B RU). You only pay for successful requests. Competing miners drive prices down over time." }
+        },
+        {
+          "@type": "Question",
+          "name": "What is a Request Unit (RU)?",
+          "acceptedAnswer": { "@type": "Answer", "text": "A Request Unit (RU) measures the computational work required to serve an RPC request, normalized across methods and chains. Simple read queries (eth_blockNumber, eth_getBalance) cost fewer RUs. Complex queries like archive lookups, debug_traceTransaction, or trace_* methods cost more. You only pay for requests that succeed — failed requests do not consume your RU budget." }
+        },
+        {
+          "@type": "Question",
+          "name": "Is there a free tier for Blockmachine?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. The Free plan provides 10,000 Request Units per month with 1 API key and 5,000 requests per minute — enough to start building and testing integrations at no cost. Archive node access, the usage dashboard, USDC payments, and the Trace API are all available on the Free plan." }
+        },
+        {
+          "@type": "Question",
+          "name": "Do I pay for failed RPC requests?",
+          "acceptedAnswer": { "@type": "Answer", "text": "No. Blockmachine only charges for requests that are successfully served. If a request fails due to a node error, rate limit, or network issue, no RUs are deducted from your budget." }
+        },
+        {
+          "@type": "Question",
+          "name": "How does Blockmachine compare to Alchemy, QuickNode, and dRPC?",
+          "acceptedAnswer": { "@type": "Answer", "text": "The key difference is price mechanism and correctness. Alchemy, QuickNode, and dRPC set prices unilaterally — you trust the provider. Blockmachine uses a market of competing miners to drive prices down, and independently verifies every response against reference nodes. Blockmachine also uses standard JSON-RPC with no proprietary lock-in, while competitors offer enhanced APIs that create dependency." }
+        },
+        {
+          "@type": "Question",
+          "name": "What are the Blockmachine RPC error codes?",
+          "acceptedAnswer": { "@type": "Answer", "text": "The key error codes are: -32029 (rate limit exceeded — retry with exponential backoff), -32021 (invalid API key — terminal error, surface to a human), -32030 (RU budget exhausted — terminal error, surface to a human). Standard JSON-RPC errors (-32600 through -32700) also apply." }
+        },
+        {
+          "@type": "Question",
+          "name": "What happens if I hit a rate limit on Blockmachine?",
+          "acceptedAnswer": { "@type": "Answer", "text": "If you exceed your plan's request rate, the gateway returns error code -32029. You should retry the request using exponential backoff — wait a short interval, then retry, doubling the interval on each subsequent failure. This is not a terminal error; your request can succeed once the rate window resets." }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I connect to Blockmachine's RPC endpoint?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Point your application at https://rpc.blockmachine.io (HTTP) or wss://rpc.blockmachine.io (WebSocket). Authenticate using the Authorization: Bearer YOUR_API_KEY header. It is standard JSON-RPC 2.0 — no SDK, no custom client library, no special configuration. Store your API key server-side only and never expose it in browser code." }
+        },
+        {
+          "@type": "Question",
+          "name": "Does Blockmachine support WebSocket connections?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. Blockmachine supports both HTTP (https://rpc.blockmachine.io) and WebSocket (wss://rpc.blockmachine.io) connections. WebSocket is recommended for applications requiring subscriptions or low-latency streaming (eth_subscribe, etc.)." }
+        },
+        {
+          "@type": "Question",
+          "name": "How does Blockmachine use Bittensor?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Blockmachine is built on Bittensor's decentralized AI/compute network. Miners in the Bittensor subnet run blockchain nodes and compete for routing share based on their performance (latency, uptime, correctness) and price. Validators score miners each epoch and set weights that determine TAO emissions — creating an economic incentive for miners to deliver fast, correct responses at competitive prices." }
+        },
+        {
+          "@type": "Question",
+          "name": "What is an epoch in Blockmachine's verification system?",
+          "acceptedAnswer": { "@type": "Answer", "text": "An epoch is 360 Bittensor blocks — approximately 72 minutes at 12 seconds per block. At the end of each epoch, all requests and responses from the period are frozen and archived. Validators then sample and re-verify a subset of miner responses against reference nodes. Miners that pass verification earn emissions; miners whose responses fail are permanently banned." }
+        },
+        {
+          "@type": "Question",
+          "name": "What is Blockmachine's performance SLA?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Blockmachine's network currently operates at 100% success rate with average latency around 240ms, based on publicly published live performance data. All operational metrics — uptime, latency, error rate, and per-node performance — are available publicly on the Performance dashboard at blockmachine.io/performance." }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I use Blockmachine with AI agents and coding assistants?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. Every Blockmachine docs page has a plain-markdown twin accessible at /docs/<page>.md. A complete agent reference is available at blockmachine.io/llm.txt. You can paste these into Claude, ChatGPT, Cursor, or any coding agent. For autonomous agents, provision a dedicated API key with a scoped RU budget so the agent cannot exceed your spending limits." }
+        },
+        {
+          "@type": "Question",
+          "name": "How should I handle API keys securely with Blockmachine?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Store API keys server-side only — never in browser code or client-side JavaScript. Use environment variables (e.g. process.env.BLOCKMACHINE_API_KEY) rather than hardcoded strings. For AI agents, use a placeholder like $BLOCKMACHINE_API_KEY in prompts so keys are never logged. Scope keys tightly: provision one key per environment, set a RU budget limit, and rotate keys on a schedule or immediately if a leak is suspected." }
+        },
+        {
+          "@type": "Question",
+          "name": "Does Blockmachine support archive node access?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. Archive node access is available on all plans including the Free tier. Archive nodes retain the full historical state of the blockchain, enabling queries at any historical block height — required for trace calls, historical balance lookups, and DeFi analytics." }
+        },
+        {
+          "@type": "Question",
+          "name": "Will Blockmachine's pricing change?",
+          "acceptedAnswer": { "@type": "Answer", "text": "The plan pricing structure (Free, Pro, Business, Enterprise) is designed to be stable. Over time, as more miners join the network and competition increases, the underlying cost per RU may decrease — this is a feature of the market mechanism, not a pricing change. Announced pricing changes will be communicated in advance." }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I become a miner on Blockmachine?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Miner onboarding is currently in Phase 3 of Blockmachine's roadmap. External miner registration is opening, with public miner performance dashboards and full documentation available. Miners run full or archive blockchain nodes, register with the Bittensor subnet, set a USD-denominated price per compute unit, and earn TAO emissions proportional to their routing share and quality score." }
+        }
+      ]
+    }
+  ]
+}
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0a;
+  --bg2:#111111;
+  --bg3:#161616;
+  --surface:#1c1c1c;
+  --border:#2a2a2a;
+  --border2:#333;
+  --accent:#00e5a0;
+  --accent2:#00b87a;
+  --accent-dim:rgba(0,229,160,0.10);
+  --accent-glow:rgba(0,229,160,0.05);
+  --red:#ff4444;
+  --yellow:#f5c842;
+  --blue:#4488ff;
+  --text:#e8e8e8;
+  --text2:#999;
+  --text3:#555;
+  --mono:'IBM Plex Mono',monospace;
+  --sans:'IBM Plex Sans',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);overflow-x:hidden;font-size:16px;line-height:1.6}
+
+/* SCANLINES */
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.025) 2px,rgba(0,0,0,0.025) 4px);pointer-events:none;z-index:9999}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(10,10,10,0.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);height:56px;display:flex;align-items:center;padding:0 2rem;justify-content:space-between}
+.nav-logo{font-family:var(--mono);font-weight:700;font-size:1rem;color:var(--text);display:flex;align-items:center;gap:10px;cursor:pointer;letter-spacing:-0.02em;text-decoration:none}
+.nav-logo-mark{width:28px;height:28px;background:var(--accent);border-radius:3px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2px;padding:5px;flex-shrink:0}
+.nav-logo-mark span{background:var(--bg);border-radius:1px;display:block}
+.nav-right{display:flex;align-items:center;gap:12px}
+.nav-back{font-family:var(--mono);font-size:0.75rem;color:var(--text3);text-decoration:none;transition:color 0.2s;letter-spacing:0.04em}
+.nav-back:hover{color:var(--text2)}
+.nav-badge{font-family:var(--mono);font-size:0.65rem;padding:3px 10px;background:var(--accent-dim);color:var(--accent);border:1px solid rgba(0,229,160,0.25);border-radius:2px;letter-spacing:0.1em}
+
+/* HERO HEADER */
+.page-hero{padding:6rem 2rem 4rem;position:relative;overflow:hidden;border-bottom:1px solid var(--border)}
+.hero-grid-bg{position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:48px 48px;opacity:0.25}
+.hero-glow{position:absolute;top:-50px;right:10%;width:500px;height:400px;background:radial-gradient(ellipse,rgba(0,229,160,0.06) 0%,transparent 70%);pointer-events:none}
+.hero-inner{position:relative;max-width:1100px;margin:0 auto}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:0.7rem;color:var(--text3);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:1.5rem}
+.hero-eyebrow::before{content:'';display:block;width:20px;height:1px;background:var(--text3)}
+.hero-eyebrow a{color:var(--text3);text-decoration:none;transition:color 0.2s}
+.hero-eyebrow a:hover{color:var(--text2)}
+.hero-eyebrow .sep{color:var(--border2)}
+h1.faq-title{font-family:var(--mono);font-size:clamp(2.2rem,6vw,4rem);font-weight:700;line-height:1.0;letter-spacing:-0.03em;color:var(--text);margin-bottom:1.2rem}
+h1.faq-title em{color:var(--accent);font-style:normal}
+.hero-desc{font-size:0.95rem;color:var(--text2);max-width:520px;line-height:1.75;margin-bottom:2rem;font-weight:300}
+.hero-stats{display:flex;gap:2.5rem;flex-wrap:wrap}
+.hstat{display:flex;flex-direction:column;gap:3px}
+.hstat-val{font-family:var(--mono);font-size:1.4rem;font-weight:700;color:var(--accent);line-height:1}
+.hstat-label{font-family:var(--mono);font-size:0.62rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em}
+
+/* LAYOUT */
+.faq-layout{max-width:1100px;margin:0 auto;padding:4rem 2rem;display:grid;grid-template-columns:240px 1fr;gap:4rem;align-items:start}
+@media(max-width:900px){.faq-layout{grid-template-columns:1fr;gap:2rem}}
+
+/* STICKY SIDEBAR */
+.faq-sidebar{position:sticky;top:76px}
+.sidebar-label{font-family:var(--mono);font-size:0.62rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.14em;margin-bottom:1rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border)}
+.sidebar-nav{display:flex;flex-direction:column;gap:0}
+.sidebar-item{font-family:var(--mono);font-size:0.73rem;color:var(--text3);padding:6px 10px 6px 0;cursor:pointer;transition:color 0.2s;border-left:2px solid transparent;padding-left:10px;line-height:1.3;letter-spacing:0.01em;background:none;border-top:none;border-right:none;border-bottom:none;text-align:left;width:100%}
+.sidebar-item:hover{color:var(--text2);border-left-color:var(--border2)}
+.sidebar-item.active{color:var(--accent);border-left-color:var(--accent)}
+.sidebar-search-wrap{margin-bottom:1.5rem}
+.sidebar-search{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:0.75rem;padding:8px 12px;border-radius:3px;outline:none;transition:border-color 0.2s}
+.sidebar-search:focus{border-color:var(--accent)}
+.sidebar-search::placeholder{color:var(--text3)}
+.result-count{font-family:var(--mono);font-size:0.65rem;color:var(--text3);margin-top:0.5rem;letter-spacing:0.08em;min-height:16px}
+@media(max-width:900px){.faq-sidebar{position:static;display:grid;grid-template-columns:1fr 1fr;gap:1rem}}
+@media(max-width:500px){.faq-sidebar{display:block}}
+.sidebar-mobile-cats{display:none}
+@media(max-width:900px){.sidebar-nav,.sidebar-label{display:none}.sidebar-mobile-cats{display:flex;flex-wrap:wrap;gap:6px;margin-top:0.5rem}}
+.cat-pill{font-family:var(--mono);font-size:0.7rem;padding:5px 12px;background:var(--bg2);border:1px solid var(--border);color:var(--text3);border-radius:20px;cursor:pointer;transition:all 0.2s}
+.cat-pill:hover,.cat-pill.active{background:var(--accent-dim);border-color:rgba(0,229,160,0.4);color:var(--accent)}
+
+/* FAQ CONTENT */
+.faq-main{min-width:0}
+.faq-section{margin-bottom:3rem}
+.section-head{display:flex;align-items:center;gap:12px;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid var(--border)}
+.section-icon{width:32px;height:32px;background:var(--accent-dim);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.section-label-tag{font-family:var(--mono);font-size:0.62rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.12em;display:block;margin-bottom:2px}
+.section-title{font-family:var(--mono);font-size:1rem;font-weight:600;color:var(--text)}
+.section-count{margin-left:auto;font-family:var(--mono);font-size:0.65rem;color:var(--text3);letter-spacing:0.08em}
+
+/* ACCORDION ITEMS */
+.faq-item{border-bottom:1px solid var(--border);overflow:hidden}
+.faq-item:last-child{border-bottom:none}
+.faq-q{width:100%;display:flex;align-items:flex-start;gap:14px;padding:1.1rem 0;background:none;border:none;color:var(--text);cursor:pointer;text-align:left;transition:color 0.2s;font-family:var(--sans);font-size:0.92rem;font-weight:500;line-height:1.5}
+.faq-q:hover{color:var(--accent)}
+.faq-q-num{font-family:var(--mono);font-size:0.62rem;color:var(--text3);flex-shrink:0;margin-top:4px;letter-spacing:0.06em;min-width:24px}
+.faq-q-text{flex:1}
+.faq-q-arrow{font-family:var(--mono);font-size:0.75rem;color:var(--text3);flex-shrink:0;margin-top:3px;transition:transform 0.25s ease,color 0.2s}
+.faq-item.open .faq-q{color:var(--accent)}
+.faq-item.open .faq-q-arrow{transform:rotate(45deg);color:var(--accent)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height 0.3s ease}
+.faq-item.open .faq-a{max-height:600px}
+.faq-a-inner{padding:0 0 1.4rem 38px;font-size:0.875rem;color:var(--text2);line-height:1.78}
+.faq-a-inner p{margin-bottom:0.75rem}
+.faq-a-inner p:last-child{margin-bottom:0}
+.faq-a-inner code{font-family:var(--mono);font-size:0.78rem;background:var(--bg2);border:1px solid var(--border);color:var(--accent);padding:1px 6px;border-radius:2px}
+.faq-a-inner .note{background:var(--bg2);border-left:2px solid var(--accent);padding:0.8rem 1rem;margin-top:0.75rem;font-family:var(--mono);font-size:0.78rem;color:var(--text2);line-height:1.6}
+.faq-a-inner .note strong{color:var(--accent);display:block;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px}
+.faq-a-inner .error-list{list-style:none;margin-top:0.75rem;display:flex;flex-direction:column;gap:6px}
+.faq-a-inner .error-list li{font-family:var(--mono);font-size:0.78rem;display:flex;gap:10px;align-items:flex-start;padding:7px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:2px}
+.faq-a-inner .error-list li .code{color:var(--yellow);flex-shrink:0}
+.faq-a-inner .error-list li .desc{color:var(--text2)}
+.faq-a-inner .error-list li .action{color:var(--text3);font-size:0.72rem;margin-top:2px}
+.compare-mini{width:100%;border-collapse:collapse;margin-top:0.75rem;font-family:var(--mono);font-size:0.75rem}
+.compare-mini th{padding:6px 10px;border-bottom:1px solid var(--border);font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);background:var(--bg2);text-align:left}
+.compare-mini td{padding:6px 10px;border-bottom:1px solid var(--border);color:var(--text2)}
+.compare-mini td:last-child{color:var(--accent)}
+.compare-mini tr:hover td{background:var(--bg2)}
+.plan-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:0.75rem}
+.plan-chip{font-family:var(--mono);font-size:0.72rem;padding:6px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:2px;color:var(--text2)}
+.plan-chip strong{color:var(--accent);display:block;font-size:0.85rem;font-weight:700}
+.chain-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:0.75rem}
+.chain-tag{font-family:var(--mono);font-size:0.7rem;padding:3px 10px;border-radius:2px;letter-spacing:0.06em}
+.chain-live{background:rgba(0,229,160,0.1);color:var(--accent);border:1px solid rgba(0,229,160,0.25)}
+.chain-soon{background:rgba(68,136,255,0.1);color:var(--blue);border:1px solid rgba(68,136,255,0.25)}
+.chain-planned{background:rgba(85,85,85,0.2);color:var(--text3);border:1px solid var(--border)}
+
+/* NO RESULTS */
+.no-results{display:none;text-align:center;padding:4rem 2rem;font-family:var(--mono);font-size:0.85rem;color:var(--text3)}
+.no-results.show{display:block}
+
+/* CTA BAND */
+.cta-band{background:var(--bg2);border-top:1px solid var(--border);padding:4rem 2rem;text-align:center;position:relative;overflow:hidden}
+.cta-band::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 60px,rgba(0,229,160,0.015) 60px,rgba(0,229,160,0.015) 61px)}
+.cta-inner{position:relative;max-width:500px;margin:0 auto}
+.cta-tag{font-family:var(--mono);font-size:0.65rem;color:var(--text3);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:1rem;display:flex;align-items:center;justify-content:center;gap:8px}
+.cta-tag::before,.cta-tag::after{content:'';display:block;width:20px;height:1px;background:var(--text3)}
+.cta-band h2{font-family:var(--mono);font-size:clamp(1.5rem,3.5vw,2.2rem);font-weight:700;letter-spacing:-0.02em;color:var(--text);margin-bottom:0.75rem}
+.cta-band p{font-size:0.88rem;color:var(--text2);line-height:1.7;margin-bottom:2rem}
+.cta-buttons{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 22px;font-family:var(--mono);font-size:0.82rem;font-weight:600;letter-spacing:0.04em;border-radius:3px;cursor:pointer;transition:all 0.2s;text-decoration:none;border:none}
+.btn-fill{background:var(--accent);color:var(--bg)}
+.btn-fill:hover{background:var(--accent2)}
+.btn-outline{background:transparent;color:var(--text);border:1px solid var(--border2)}
+.btn-outline:hover{border-color:var(--text2)}
+
+/* FOOTER */
+footer{background:var(--bg2);border-top:1px solid var(--border);padding:2.5rem 2rem}
+.footer-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+.footer-logo{font-family:var(--mono);font-weight:700;font-size:0.9rem;color:var(--text);display:flex;align-items:center;gap:8px;cursor:pointer;text-decoration:none}
+.footer-links{display:flex;gap:1.5rem;flex-wrap:wrap}
+.footer-link{font-family:var(--mono);font-size:0.72rem;color:var(--text3);cursor:pointer;transition:color 0.2s;text-decoration:none}
+.footer-link:hover{color:var(--text2)}
+.footer-bottom{max-width:1100px;margin:1.5rem auto 0;padding-top:1.2rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;font-family:var(--mono);font-size:0.65rem;color:var(--text3)}
+.footer-bottom .pub{color:var(--accent)}
+
+/* SCROLL REVEAL */
+.reveal{opacity:0;transform:translateY(12px);transition:opacity 0.4s ease,transform 0.4s ease}
+.reveal.visible{opacity:1;transform:none}
+
+/* HIGHLIGHT SEARCH MATCH */
+.hl-match{background:rgba(0,229,160,0.2);color:var(--accent);border-radius:2px;padding:0 2px}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/">
+    <div class="nav-logo-mark"><span></span><span></span><span></span><span></span></div>
+    blockmachine
+  </a>
+  <div class="nav-right">
+    <a class="nav-back" href="/">← home</a>
+    <span class="nav-badge">FAQ</span>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="page-hero">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-inner">
+    <div class="hero-eyebrow">
+      <a href="/">blockmachine</a>
+      <span class="sep">/</span>
+      <span>faq</span>
+    </div>
+    <h1 class="faq-title">Frequently asked<br>questions<em>.</em></h1>
+    <p class="hero-desc">Everything you need to know about Blockmachine's fast, verified, Bittensor-powered blockchain RPC infrastructure — from pricing and error codes to verification logic and AI agent integration.</p>
+    <div class="hero-stats">
+      <div class="hstat"><div class="hstat-val">20</div><div class="hstat-label">Questions answered</div></div>
+      <div class="hstat"><div class="hstat-val">6</div><div class="hstat-label">Topic categories</div></div>
+      <div class="hstat"><div class="hstat-val">∞</div><div class="hstat-label">Curiosity supported</div></div>
+    </div>
+  </div>
+</header>
+
+<div class="faq-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="faq-sidebar">
+    <div class="sidebar-search-wrap">
+      <input class="sidebar-search" id="faq-search" type="text" placeholder="Search questions…" oninput="filterFAQ(this.value)" aria-label="Search FAQ">
+      <div class="result-count" id="result-count"></div>
+    </div>
+
+    <div class="sidebar-label">Jump to section</div>
+    <nav class="sidebar-nav" aria-label="FAQ sections">
+      <button class="sidebar-item active" onclick="scrollToSection('general')">Platform overview</button>
+      <button class="sidebar-item" onclick="scrollToSection('verification')">Verification & correctness</button>
+      <button class="sidebar-item" onclick="scrollToSection('pricing')">Pricing & plans</button>
+      <button class="sidebar-item" onclick="scrollToSection('integration')">Integration & API</button>
+      <button class="sidebar-item" onclick="scrollToSection('performance')">Performance & SLA</button>
+      <button class="sidebar-item" onclick="scrollToSection('bittensor')">Bittensor & mining</button>
+    </nav>
+
+    <!-- Mobile pills -->
+    <div class="sidebar-mobile-cats">
+      <button class="cat-pill active" onclick="scrollToSection('general')">Overview</button>
+      <button class="cat-pill" onclick="scrollToSection('verification')">Verification</button>
+      <button class="cat-pill" onclick="scrollToSection('pricing')">Pricing</button>
+      <button class="cat-pill" onclick="scrollToSection('integration')">Integration</button>
+      <button class="cat-pill" onclick="scrollToSection('performance')">Performance</button>
+      <button class="cat-pill" onclick="scrollToSection('bittensor')">Bittensor</button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="faq-main" id="faq-main">
+
+    <!-- ── SECTION 1: GENERAL ───────────────────────────────────────── -->
+    <section class="faq-section reveal" id="section-general" data-section="general">
+      <div class="section-head">
+        <div class="section-icon">⬡</div>
+        <div>
+          <span class="section-label-tag">01 / Platform</span>
+          <div class="section-title">Platform overview</div>
+        </div>
+        <span class="section-count">3 questions</span>
+      </div>
+
+      <div class="faq-item" data-q="what is blockmachine blockchain rpc bittensor">
+        <button class="faq-q" onclick="toggle(this)" aria-expanded="false">
+          <span class="faq-q-num">01</span>
+          <span class="faq-q-text">What is Blockmachine?</span>
+          <span class="faq-q-arrow">+</span>
+        </button>
+        <div class="faq-a" role="region">
+          <div class="faq-a-inner">
+            <p>Blockmachine is a blockchain RPC (Remote Procedure Call) infrastructure provider powered by Bittensor. It provides fast, independently verified access to full and archive blockchain nodes via a standard JSON-RPC interface — no custom SDK, no proprietary API, no lock-in.</p>
+            <p>Unlike centralized RPC providers (Alchemy, QuickNode, dRPC), Blockmachine routes requests through a decentralized network of competing miners. Every response is cryptographically verified against trusted reference nodes, so correctness is a guarantee — not a trust assumption.</p>
+            <div class="note"><strong>Key differentiator</strong>Competing miners drive prices down. Deterministic verification means you don't have to trust the provider — you can verify it yourself.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item" data-q="what chains does blockmachine support ethereum bsc bittensor evm">
+        <button class="faq-q" onclick="toggle(this)" aria-expanded="false">
+          <span class="faq-q-num">02</span>
+          <span class="faq-q-text">What blockchain chains does Blockmachine support?</span>
+          <span class="faq-q-arrow">+</span>
+        </button>
+        <div class="faq-a" role="region">
+          <div class="faq-a-inner">
+            <p>Blockmachine currently supports Bittensor (TAO) as its primary chain, with expanded multi-chain support on the roadmap.</p>
+            <div class="chain-tags">
+              <span class="chain-tag chain-live">⬤ Bittensor (TAO) — Live</span>
+              <span class="chain-tag chain-soon">→ Ethereum — Phase 5</span>
+              <span class="chain-tag chain-soon">→ BSC — Phase 5</span>
+              <span class="chain-tag chain-planned">· Additional EVM chains — Planned</span>
+            </div>
+            <p style="margin-top:0.9rem">All supported chains are accessed via standard JSON-RPC 2.0 — the same interface you use today with any other provider.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item" data-q="how does blockmachine compare alchemy quicknode drpc difference">
+        <button class="faq-q" onclick="toggle(this)" aria-expanded="false">
+          <span class="faq-q-num">03</span>
+          <span class="faq-q-text">How does Blockmachine compare to Alchemy, QuickNode, and dRPC?</span>
+          <span class="faq-q-arrow">+</span>
+        </button>
+        <div class="faq-a" role="region">
+          <div class="faq-a-inner">
+            <p>The two structural differences are <strong style="color:var(--text)">price mechanism</strong> and <strong style="color:var(--text)">correctness model</strong>.</p>
+            <table class="compare-mini">
+              <thead><tr><th>Dimension</th><th>Alchemy / QuickNode / dRPC</th><th>blockmachine</th></tr></thead>
+              <tbody>
+                <tr><td>Price driver</td><td>Provider sets price</td><td>Competing miners</td></tr>
+                <tr><td>Correctness</td><td>Trust the provider</td><td>Independently verified</td></tr>
+                <tr><td>Lock-in</td><td>Proprietary enhanced APIs</td><td>Standard JSON-RPC</td></tr>
+                <tr><td>Transparency</td><td>Black-box SLAs</td><td>All data public</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── SECTION 2: VERIFICATION ──────────────────────────────────── -->
+    <section class="faq-section reveal" id="section-verification" data-section="verification">
+      <div class="section-head">
+        <div class="section-icon">✓</div>
+        <div>
+          <span class="section-label-tag">02 / Trust</span>
+          <div class="section-title">Verification & correctness</div>
+        </div>
+        <span class="section-count">3 questions</span>
+      </div>
+
+      <div class="faq-item" data-q="how does blockmachine verify rpc responses correctness hash reference node">
+        <button class="faq-q" onclick="toggle(this)" aria-expanded="false">
+          <span class="faq-q-num">04</span>
+          <span class="faq-q-text">How does Blockmachine verify blockchain RPC responses?</span>
+          <span class="faq-q-arrow">+</span>
+        </button>
+        <div class="faq-a" role="region">
+          <div class="faq-a-inner">
+            <p>Blockmachine uses <strong style="color:var(--text)">deterministic hash verification</strong>. At the end of every epoch (~72 minutes), validators sample logged miner responses and re-execute the same requests against trusted reference infrastructure.</p>
+            <p>The miner's response hash is compared to the reference node's response hash. Because blockchain state is deterministic — the same block height, same method, same parameters always produce the same result — any mismatch is proof of a lie.</p>
+            <div class="note"><strong>Consequence</strong>A single mismatched response permanently bans the miner. Not a warning. Not a score penalty. Banned. This creates the strongest possible correctness incentive.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item" data-q="what is an epoch blockmachine verification cycle 360 blocks">
+        <button class="faq-q" onclick="toggle(this)" aria-expanded="false">
+          <span class="faq-q-num">05</span>
+          <span class="faq-q-text">What is an epoch in Blockmachine's verification system?</span>
+          <span class="faq-q-arrow">+</span>
+        </button>
+        <div class="faq-a" role="region">
+          <div class="faq-a-inner">
+            <p>An epoch is <code>360 Bittensor blocks</code> — approximately 72 minutes at 12 seconds per block. It is the fundamental unit of the verification and scoring cycle.</p>
+            <p>During an epoch, the gateway routes live traffic, logs all miner responses, and accumulates performance metrics. At the epoch boundary, everything freezes: logs are archived (public and immutable), validators sample and verify responses, miners are scored, and weights are updated on-chain. Then the next epoch begins.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item" data-q="can I trust blockmachine responses are correct proof public">
+        <button class="faq-q" onclick="toggle(this)" aria-expanded="false">
+          <span class="faq-q-num">06</span>
+          <span class="faq-q-text">How do I know Blockmachine's responses are actually correct?</span>
+          <span class="faq-q-arrow">+</span>
+        </button>
+        <div class="faq-a" role="region">
+          <div class="faq-a-inner">
+            <p>You don't have to take our word for it. Every epoch's sampled logs are public and immutable — you can audit the verification process yourself. The performance dashboard at <code>blockmachine.io/performance</code> shows live and historical correctness metrics per node.</p>
+            <p>The economic design also enforces this: miners earn TAO emissions proportional to routing share. A banned miner earns nothing. The cost of lying exceeds any potential benefit, making correctness the rational choice for every miner.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── SECTION 3: PRICING ───────────────────────────────────────── -->
+    <section class="faq-section reveal" id="section-pricing" data-section="pricing">
+      <div class="section-head">
+        <div class="section-icon">$</div>
+        <div>
+          <span class="section-label-tag">03 / Cost</span>
+          <div class="section-title">Pricing & plans</div>
+        </div>
+        <span class="section-count">5 questions</span>
+      </div>
+
+      <div class="faq-item" data-q="blockmachine pricing plans cost free pro business enterprise">
+        <button class="faq-q" onclick="toggle(this)" aria-expanded="false">
+          <span class="faq-q-num">07</span>
+          <span class="faq-q-text">What are Blockmachine's pricing plans?</span>
+          <span class="faq-q-arrow">+</span>
+        </button>
+        <div class="faq-a" role="region">
+          <div class="faq-a-inner">
+            <p>Blockmachine charges per Request Unit (RU). Four plans are available:</p>
+            <div class="plan-chips">
+              <div class="plan-chip"><strong>$0/mo</strong>Free · 10K RU · 1 key</div>
+              <div class="plan-chip"><strong>$25/mo</strong>Pro · 20M RU · 3 keys</div>
+              <div class="plan-chip"><strong>$125/mo</strong>Business · 100M RU · 5 keys</div>
+              <div class="plan-chip"><strong>$999/mo</strong>Enterprise · 1B RU · 10 keys</div>
+            </div>
+            <p style="margin-top:0.9rem">All plans include archive node access, usage dashboard, USDC payments, and the Trace API. Overage rates decrease with tier: $3/1M (Pro) → $2/1M (Business) → $1/1M (Enterprise).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item" data-q="what is a request unit RU how is it calculated">
+        <button class="faq-q" onclick="toggle(this)" aria-expanded="false">
+          <span class="faq-q-num">08</span>
+          <span class="faq-q-text">What is a Request Unit (RU)?</span>
+          <span class="faq-q-arrow">+</span>
+        </button>
+        <div class="faq-a" role="region">
+          <div class="faq-a-inner">
+            <p>A Request Unit (RU) measures the computational work required to serve an RPC request, normalized across methods and chains. This ensures you pay for the actual complexity of a call — not a flat fee per request.</p>
+            <p>As a rough guide: simple reads like <code>eth_blockNumber</code> or <code>eth_getBalance</code> cost ~1 RU. Standard queries cost ~5–10 RU. Archive lookups and trace calls (<code>debug_traceTransaction</code>, <code>trace_*</code>) cost ~20–50 RU.</p>
+            <div class="note"><strong>You only pay for what succeeds</strong>Failed requests do not consume RUs. If a request errors, your budget is not charged.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item" data-q="free tier blockmachine how many requests no cost">
+        <button class="faq-q" onclick="toggle(this)" aria-expanded="false">
+          <span class="faq-q-num">09</span>
+          <span class="faq-q-text">Is there a free tier?</span>
+          <span class="faq-q-arrow">+</span>
+        </button>
+        <div class="faq-a" role="region">
+          <div class="faq-a-inner">
+            <p>Yes. The Free plan provides <code>10,000 RU/month</code> with 1 API key and 5,000 requests per minute — no credit card required. Archive node access, the usage dashboard, USDC payments, and the Trace API are all included.</p>
+            <p>The free tier is designed for prototyping and testing. For production workloads, the Pro plan ($25/mo) provides 20M RU/month — sufficient for most mid-scale applications.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item" data-q="do I pay for failed requests errors rate limits">
+        <button class="faq-q" onclick="toggle(this)" aria-expanded="false">
+          <span class="faq-q-num">10</span>
+          <span class="faq-q-text">Do I pay for failed requests?</span>
+          <span class="faq-q-arrow">+</span>
+        </button>
+        <div class="faq-a" role="region">
+          <div class="faq-a-inner">
+            <p>No. Blockmachine only charges for successfully served requests. Requests that fail due to rate limiting (<code>-32029</code>), invalid keys (<code>-32021</code>), budget exhaustion (<code>-32030</code>), or node errors do not consume your RU budget.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item" data-q="will blockmachine pricing change increase stable">
+        <button class="faq-q" onclick="toggle(this)" aria-expanded="false">
+          <span class="faq-q-num">11</span>
+          <span class="faq-q-text">Will pricing change over time?</span>
+          <span class="faq-q-arrow">+</span>
+        </button>
+        <div class="faq-a" role="region">
+          <div class="faq-a-inner">
+            <p>Plan pricing (Free / Pro / Business / Enterprise) is designed to be stable, and any changes will be communicated in advance.</p>
+            <p>However, as more miners join the network and competition increases, the underlying cost per RU may actually decrease over time. This is a structural feature of the market mechanism — more competition means lower prices for customers. Announced pricing changes will always be communicated before they take effect.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── SECTION 4: INTEGRATION ───────────────────────────────────── -->
+    <section class="faq-section reveal" id="section-integration" data-section="integration">
+      <div class="section-head">
+        <div class="section-icon">⚙</div>
+        <div>
+          <span class="section-label-tag">04 / Dev</span>
+          <div class="section-title">Integration & API</div>
+        </div>
+        <span class="section-count">4 questions</span>
+      </div>
+
+      <div class="faq-item" data-q="how to connect blockmachine rpc endpoint http websocket api key">
+        <button class="faq-q" onclick="toggle(this)" aria-expanded="false">
+          <span class="faq-q-num">12</span>
+          <span class="faq-q-text">How do I connect to Blockmachine?</span>
+          <span class="faq-q-arrow">+</span>
+        </button>
+        <div class="faq-a" role="region">
+          <div class="faq-a-inner">
+            <p>Point your application at one of these endpoints and authenticate with your API key:</p>
+            <div class="note">
+              <strong>Endpoints</strong>
+              HTTP: <code>https://rpc.blockmachine.io</code><br>
+              WebSocket: <code>wss://rpc.blockmachine.io</code><br>
+              Auth header: <code>Authorization: Bearer $BLOCKMACHINE_API_KEY</code>
+            </div>
+            <p style="margin-top:0.9rem">It is standard JSON-RPC 2.0 — no SDK, no custom client, no special configuration. Store your API key server-side only and never expose it in browser code.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item" data-q="blockmachine error codes -32029 -32021 -32030 rate limit invalid key">
+        <button class="faq-q" onclick="toggle(this)" aria-expanded="false">
+          <span class="faq-q-num">13</span>
+          <span class="faq-q-text">What are the Blockmachine-specific error codes?</span>
+          <span class="faq-q-arrow">+</span>
+        </button>
+        <div class="faq-a" role="region">
+          <div class="faq-a-inner">
+            <p>Blockmachine uses three non-standard JSON-RPC error codes in addition to the standard <code>-32600</code> to <code>-32700</code> range:</p>
+            <ul class="error-list">
+              <li><span class="code">-32029</span><div><div class="desc">Rate limit exceeded</div><div class="action">Retry with exponential backoff. Not terminal.</div></div></li>
+              <li><span class="code">-32021</span><div><div class="desc">Invalid API key</div><div class="action">Terminal — surface to a human. Check key rotation.</div></div></li>
+              <li><span class="code">-32030</span><div><div class="desc">RU budget exhausted</div><div class="action">Terminal — surface to a human. Upgrade plan or wait for renewal.</div></div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item" data-q="blockmachine api key security best practices env var agent">
+        <button class="faq-q" onclick="toggle(this)" aria-expanded="false">
+          <span class="faq-q-num">14</span>
+          <span class="faq-q-text">How should I handle API keys securely?</span>
+          <span class="faq-q-arrow">+</span>
+        </button>
+        <div class="faq-a" role="region">
+          <div class="faq-a-inner">
+            <p>Three habits cover the majority of key security risk:</p>
+            <p><strong style="color:var(--text)">1. Server-side only.</strong> Never include your API key in browser JavaScript, mobile app bundles, or any client-side code. Use environment variables (<code>process.env.BLOCKMACHINE_API_KEY</code>) and read them at runtime on the server.</p>
+            <p><strong style="color:var(--text)">2. One key per environment.</strong> Use separate keys for development, staging, and production. If a key is compromised, rotation affects only one environment.</p>
+            <p><strong style="color:var(--text)">3. Budget-scoped keys for AI agents.</strong> If an autonomous agent will call the API, provision a dedicated key with a low RU budget from the dashboard. The gateway hard-stops when the budget is hit — no runaway spend.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item" data-q="blockmachine AI agent coding assistant llm integration cursor claude chatgpt">
+        <button class="faq-q" onclick="toggle(this)" aria-expanded="false">
+          <span class="faq-q-num">15</span>
+          <span class="faq-q-text">Can I use Blockmachine with AI coding agents?</span>
+          <span class="faq-q-arrow">+</span>
+        </button>
+        <div class="faq-a" role="region">
+          <div class="faq-a-inner">
+            <p>Yes — Blockmachine's docs are built for LLM consumption. Every docs page has a raw markdown twin at <code>/docs/&lt;page&gt;.md</code>, and a complete agent reference lives at <code>blockmachine.io/llm.txt</code>.</p>
+            <p>For coding agents (Cursor, Claude Code, Codex, GitHub Copilot), drop this into your agent config file:</p>
+            <div class="note">
+              <strong>Agent config</strong>
+              When touching Bittensor RPC, use <code>https://rpc.blockmachine.io</code>.<br>
+              Auth: <code>Authorization: Bearer $BLOCKMACHINE_API_KEY</code><br>
+              Full docs: <code>blockmachine.io/docs/integrate-rpc.md</code>
+            </div>
+            <p style="margin-top:0.9rem">Use a placeholder like <code>$BLOCKMACHINE_API_KEY</code> — never paste a real key into an agent prompt or chat session, as providers may log inputs.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── SECTION 5: PERFORMANCE ───────────────────────────────────── -->
+    <section class="faq-section reveal" id="section-performance" data-section="performance">
+      <div class="section-head">
+        <div class="section-icon">📊</div>
+        <div>
+          <span class="section-label-tag">05 / SLA</span>
+          <div class="section-title">Performance & SLA</div>
+        </div>
+        <span class="section-count">2 questions</span>
+      </div>
+
+      <div class="faq-item" data-q="blockmachine performance SLA uptime latency public dashboard">
+        <button class="faq-q" onclick="toggle(this)" aria-expanded="false">
+          <span class="faq-q-num">16</span>
+          <span class="faq-q-text">What is Blockmachine's performance SLA?</span>
+          <span class="faq-q-arrow">+</span>
+        </button>
+        <div class="faq-a" role="region">
+          <div class="faq-a-inner">
+            <p>Rather than a contractual SLA document you have to trust, Blockmachine publishes all performance data publicly in real time. Current network metrics:</p>
+            <div class="plan-chips">
+              <div class="plan-chip"><strong>100.00%</strong>Success rate (24h)</div>
+              <div class="plan-chip"><strong>~244ms</strong>Avg latency (24h)</div>
+              <div class="plan-chip"><strong>0.00%</strong>Error rate (24h)</div>
+              <div class="plan-chip"><strong>316M+</strong>Requests / 24h</div>
+            </div>
+            <p style="margin-top:0.9rem">Live metrics, per-node breakdowns, and historical charts are all available at <code>blockmachine.io/performance</code>. You don't have to take our word for it — the data is there to audit.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item" data-q="blockmachine archive node access historical data">
+        <button class="faq-q" onclick="toggle(this)" aria-expanded="false">
+          <span class="faq-q-num">17</span>
+          <span class="faq-q-text">Does Blockmachine support archive node access?</span>
+          <span class="faq-q-arrow">+</span>
+        </button>
+        <div class="faq-a" role="region">
+          <div class="faq-a-inner">
+            <p>Yes. Archive node access is available on all plans including the Free tier. Archive nodes retain the full historical state of the blockchain, enabling queries at any historical block height.</p>
+            <p>Archive access is required for: historical balance lookups at past blocks, <code>trace_*</code> and <code>debug_traceTransaction</code> calls, DeFi analytics and indexing, and any application that reconstructs past chain state.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── SECTION 6: BITTENSOR ─────────────────────────────────────── -->
+    <section class="faq-section reveal" id="section-bittensor" data-section="bittensor">
+      <div class="section-head">
+        <div class="section-icon">⛏</div>
+        <div>
+          <span class="section-label-tag">06 / Network</span>
+          <div class="section-title">Bittensor & mining</div>
+        </div>
+        <span class="section-count">3 questions</span>
+      </div>
+
+      <div class="faq-item" data-q="how does blockmachine use bittensor subnet TAO emissions miners">
+        <button class="faq-q" onclick="toggle(this)" aria-expanded="false">
+          <span class="faq-q-num">18</span>
+          <span class="faq-q-text">How does Blockmachine use Bittensor?</span>
+          <span class="faq-q-arrow">+</span>
+        </button>
+        <div class="faq-a" role="region">
+          <div class="faq-a-inner">
+            <p>Blockmachine is built on a Bittensor subnet. Miners in the subnet run full or archive blockchain nodes and compete for routing share. Validators score miners each epoch based on latency, uptime, correctness, and price, then set weights on-chain — determining each miner's share of TAO emissions.</p>
+            <p>This creates a self-reinforcing incentive loop: miners earn more TAO by delivering fast, correct, competitively priced responses. Bad actors (slow, incorrect, or overpriced) receive less routing, earn less TAO, and face permanent bans for incorrect data.</p>
+            <div class="note"><strong>As a customer</strong>You see none of this. No tokens, no wallet, no Bittensor complexity. Just a standard JSON-RPC endpoint that works — backed by economic incentives you can audit.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item" data-q="how does blockmachine route requests miners gateway pricing quality">
+        <button class="faq-q" onclick="toggle(this)" aria-expanded="false">
+          <span class="faq-q-num">19</span>
+          <span class="faq-q-text">How does the gateway decide which miner handles my request?</span>
+          <span class="faq-q-arrow">+</span>
+        </button>
+        <div class="faq-a" role="region">
+          <div class="faq-a-inner">
+            <p>The gateway calculates a routing score for each miner that combines two dimensions: <strong style="color:var(--text)">quality</strong> (latency, uptime, correctness) and <strong style="color:var(--text)">price</strong> (USD per compute unit). Miners with better quality and lower prices receive proportionally more traffic.</p>
+            <p>There is no manual allocation, no queue, and no committee. The market decides. A miner that fails the quality threshold gets almost no traffic. A miner that bids too high gets undercut by competitors. The routing score is visible in real time on the Performance dashboard.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item" data-q="how to become a miner blockmachine register run node">
+        <button class="faq-q" onclick="toggle(this)" aria-expanded="false">
+          <span class="faq-q-num">20</span>
+          <span class="faq-q-text">How do I become a miner on Blockmachine?</span>
+          <span class="faq-q-arrow">+</span>
+        </button>
+        <div class="faq-a" role="region">
+          <div class="faq-a-inner">
+            <p>Miner onboarding is currently in <strong style="color:var(--text)">Phase 3</strong> of Blockmachine's roadmap — external miner registration is opening now, alongside public miner performance dashboards and full documentation.</p>
+            <p>To mine on Blockmachine, you run full or archive blockchain nodes, register with the Bittensor subnet, and set a USD-denominated price per compute unit. Your earnings are proportional to your routing share, which is determined by your performance and pricing relative to other miners.</p>
+            <p>Full miner documentation, tooling, and registration are available through the Miners link in the footer, or at <code>team@blockmachine.io</code>.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- NO RESULTS -->
+    <div class="no-results" id="no-results">No questions match "<span id="search-term"></span>". Try a different term or <button onclick="clearSearch()" style="background:none;border:none;color:var(--accent);font-family:var(--mono);font-size:0.85rem;cursor:pointer">clear search</button>.</div>
+
+  </main>
+</div>
+
+<!-- CTA -->
+<section class="cta-band">
+  <div class="cta-inner">
+    <div class="cta-tag">Still have questions?</div>
+    <h2>Talk to the team<br>or read the docs.</h2>
+    <p>Comprehensive technical documentation, integration guides, and the full agent reference are all available — or reach us directly.</p>
+    <div class="cta-buttons">
+      <a class="btn btn-fill" href="mailto:team@blockmachine.io">Email the team →</a>
+      <a class="btn btn-outline" href="/docs/integrate-rpc">Read the docs</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <a class="footer-logo" href="/">
+      <div class="nav-logo-mark"><span></span><span></span><span></span><span></span></div>
+      blockmachine
+    </a>
+    <nav class="footer-links">
+      <a class="footer-link" href="/performance">Performance</a>
+      <a class="footer-link" href="/technology">Technology</a>
+      <a class="footer-link" href="/pricing">Pricing</a>
+      <a class="footer-link" href="#">Docs</a>
+      <a class="footer-link" href="#">GitHub</a>
+      <a class="footer-link" href="#">Discord</a>
+      <a class="footer-link" href="mailto:team@blockmachine.io">team@blockmachine.io</a>
+    </nav>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 Blockmachine. Powered by Bittensor.</span>
+    <span class="pub">All performance data is public.</span>
+  </div>
+</footer>
+
+<script>
+// ── ACCORDION ─────────────────────────────────────────────────────────────────
+function toggle(btn) {
+  const item = btn.closest('.faq-item');
+  const isOpen = item.classList.contains('open');
+  // close all
+  document.querySelectorAll('.faq-item.open').forEach(i => {
+    i.classList.remove('open');
+    i.querySelector('.faq-q').setAttribute('aria-expanded','false');
+  });
+  if (!isOpen) {
+    item.classList.add('open');
+    btn.setAttribute('aria-expanded','true');
+  }
+}
+
+// ── SEARCH / FILTER ───────────────────────────────────────────────────────────
+function filterFAQ(query) {
+  const q = query.toLowerCase().trim();
+  document.getElementById('search-term').textContent = query;
+  const items = document.querySelectorAll('.faq-item');
+  const sections = document.querySelectorAll('.faq-section');
+  let totalVisible = 0;
+
+  if (!q) {
+    items.forEach(i => { i.style.display = ''; removeHighlights(i); });
+    sections.forEach(s => s.style.display = '');
+    document.getElementById('no-results').classList.remove('show');
+    document.getElementById('result-count').textContent = '';
+    return;
+  }
+
+  sections.forEach(section => {
+    const sectionItems = section.querySelectorAll('.faq-item');
+    let sectionVisible = 0;
+    sectionItems.forEach(item => {
+      const text = item.dataset.q + ' ' + item.querySelector('.faq-q-text').textContent.toLowerCase() + ' ' + item.querySelector('.faq-a-inner').textContent.toLowerCase();
+      const match = text.includes(q);
+      item.style.display = match ? '' : 'none';
+      if (match) { sectionVisible++; totalVisible++; highlightText(item, query); }
+      else removeHighlights(item);
+    });
+    section.style.display = sectionVisible > 0 ? '' : 'none';
+    // auto-open single result
+    if (sectionVisible === 1) {
+      const visItem = Array.from(sectionItems).find(i => i.style.display !== 'none');
+      if (visItem) { visItem.classList.add('open'); visItem.querySelector('.faq-q').setAttribute('aria-expanded','true'); }
+    }
+  });
+
+  const nr = document.getElementById('no-results');
+  nr.classList.toggle('show', totalVisible === 0);
+  document.getElementById('result-count').textContent = totalVisible > 0 ? `${totalVisible} result${totalVisible !== 1 ? 's' : ''}` : '';
+}
+
+function highlightText(item, query) {
+  removeHighlights(item);
+  const qEl = item.querySelector('.faq-q-text');
+  qEl.innerHTML = qEl.textContent.replace(new RegExp(`(${escRe(query)})`, 'gi'), '<mark class="hl-match">$1</mark>');
+}
+function removeHighlights(item) {
+  const qEl = item.querySelector('.faq-q-text');
+  qEl.innerHTML = qEl.textContent;
+}
+function escRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+function clearSearch() {
+  document.getElementById('faq-search').value = '';
+  filterFAQ('');
+}
+
+// ── SIDEBAR ACTIVE STATE ──────────────────────────────────────────────────────
+function scrollToSection(id) {
+  const el = document.getElementById('section-' + id);
+  if (!el) return;
+  const offset = 76;
+  const top = el.getBoundingClientRect().top + window.scrollY - offset;
+  window.scrollTo({ top, behavior: 'smooth' });
+  document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.sidebar-item, .cat-pill').forEach(b => {
+    if (b.getAttribute('onclick')?.includes(`'${id}'`)) b.classList.add('active');
+  });
+}
+
+// Scroll spy
+const sectionEls = document.querySelectorAll('.faq-section[id]');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id.replace('section-','');
+      document.querySelectorAll('.sidebar-item').forEach(b => {
+        b.classList.toggle('active', b.getAttribute('onclick')?.includes(`'${id}'`));
+      });
+    }
+  });
+}, { threshold: 0.3, rootMargin: '-60px 0px -40% 0px' });
+sectionEls.forEach(el => observer.observe(el));
+
+// ── SCROLL REVEAL ─────────────────────────────────────────────────────────────
+const revealObserver = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.08 });
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+setTimeout(() => { document.querySelectorAll('.reveal:not(.visible)').forEach((el,i) => setTimeout(() => el.classList.add('visible'), i * 80)); }, 80);
+</script>
+</body>
+</html>

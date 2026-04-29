@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blockmachine — Fast, Verified Blockchain RPC</title>
+<meta name="description" content="Blockmachine provides RPC and archive node access across multiple chains. Powered by Bittensor. Responses are independently verified for correctness, and live performance data is public.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0a;--bg2:#111111;--bg3:#161616;--surface:#1c1c1c;
+  --border:#2a2a2a;--border2:#333;
+  --accent:#00e5a0;--accent2:#00b87a;--accent-dim:rgba(0,229,160,0.12);
+  --red:#ff4444;--yellow:#f5c842;--blue:#4488ff;
+  --text:#e8e8e8;--text2:#999;--text3:#555;
+  --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);overflow-x:hidden;font-size:16px;line-height:1.6}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);pointer-events:none;z-index:9999}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(10,10,10,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);height:56px;display:flex;align-items:center;padding:0 2rem;justify-content:space-between}
+.nav-logo{font-family:var(--mono);font-weight:700;font-size:1rem;color:var(--text);display:flex;align-items:center;gap:10px;cursor:pointer;letter-spacing:-0.02em}
+.nav-logo-mark{width:28px;height:28px;background:var(--accent);border-radius:3px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2px;padding:5px}
+.nav-logo-mark span{background:var(--bg);border-radius:1px;display:block}
+.nav-links{display:flex;align-items:center;gap:0}
+.nav-link{padding:6px 14px;font-family:var(--mono);font-size:0.78rem;color:var(--text2);cursor:pointer;transition:color 0.2s;white-space:nowrap;letter-spacing:0.02em}
+.nav-link:hover,.nav-link.active{color:var(--text)}
+.nav-actions{display:flex;align-items:center;gap:8px}
+.nav-signin{font-family:var(--mono);font-size:0.78rem;color:var(--text2);cursor:pointer;padding:6px 14px;transition:color 0.2s}
+.nav-signin:hover{color:var(--text)}
+.nav-cta{font-family:var(--mono);font-size:0.78rem;font-weight:600;color:var(--bg);background:var(--accent);padding:7px 18px;border-radius:3px;cursor:pointer;transition:background 0.2s;letter-spacing:0.02em}
+.nav-cta:hover{background:var(--accent2)}
+.nav-ai-badge{font-family:var(--mono);font-size:0.68rem;color:var(--accent);border:1px solid rgba(0,229,160,0.3);padding:3px 8px;border-radius:2px;letter-spacing:0.08em;animation:badge-pulse 3s infinite}
+@keyframes badge-pulse{0%,100%{border-color:rgba(0,229,160,0.3)}50%{border-color:rgba(0,229,160,0.7)}}
+
+/* PAGE SYSTEM */
+.page{display:none;padding-top:56px;min-height:100vh}
+.page.active{display:block}
+
+/* HERO */
+.hero{min-height:90vh;display:flex;flex-direction:column;justify-content:center;padding:6rem 2rem 5rem;position:relative;overflow:hidden}
+.hero-grid-bg{position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:48px 48px;opacity:0.3}
+.hero-glow{position:absolute;top:30%;left:50%;transform:translate(-50%,-50%);width:600px;height:400px;background:radial-gradient(ellipse at center,rgba(0,229,160,0.07) 0%,transparent 70%);pointer-events:none}
+.hero-inner{position:relative;max-width:1100px;margin:0 auto;width:100%}
+.hero-tag{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:0.72rem;color:var(--accent);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:2rem}
+.hero-tag::before{content:'';display:block;width:20px;height:1px;background:var(--accent)}
+h1.hero-title{font-family:var(--mono);font-weight:700;font-size:clamp(2.8rem,7vw,5.5rem);line-height:1.05;letter-spacing:-0.03em;margin-bottom:1.5rem;color:var(--text)}
+h1.hero-title .hl{color:var(--accent)}
+.hero-desc{font-size:1.05rem;color:var(--text2);max-width:520px;line-height:1.75;margin-bottom:2.5rem;font-weight:300}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:4rem}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 24px;font-family:var(--mono);font-size:0.85rem;font-weight:600;letter-spacing:0.04em;border-radius:3px;cursor:pointer;transition:all 0.2s;border:none;text-decoration:none}
+.btn-fill{background:var(--accent);color:var(--bg)}
+.btn-fill:hover{background:var(--accent2)}
+.btn-outline{background:transparent;color:var(--text);border:1px solid var(--border2)}
+.btn-outline:hover{border-color:var(--text2)}
+.btn-ghost{background:transparent;color:var(--text2);border:none;padding-left:0}
+.btn-ghost:hover{color:var(--text)}
+.btn-ai{background:linear-gradient(135deg,rgba(0,229,160,0.15),rgba(68,136,255,0.15));color:var(--accent);border:1px solid rgba(0,229,160,0.35)}
+.btn-ai:hover{background:linear-gradient(135deg,rgba(0,229,160,0.25),rgba(68,136,255,0.25));border-color:var(--accent)}
+
+/* METRICS BAR */
+.metrics-bar{display:flex;gap:0;border:1px solid var(--border);border-radius:4px;overflow:hidden;max-width:700px}
+.metric-cell{flex:1;padding:1.2rem 1.5rem;border-right:1px solid var(--border);background:var(--bg2);transition:background 0.2s}
+.metric-cell:last-child{border-right:none}
+.metric-cell:hover{background:var(--surface)}
+.metric-label{font-family:var(--mono);font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:4px}
+.metric-value{font-family:var(--mono);font-size:1.3rem;font-weight:700;color:var(--text);line-height:1}
+.metric-value.green{color:var(--accent)}
+.metric-dot{display:inline-block;width:6px;height:6px;background:var(--accent);border-radius:50%;margin-right:6px;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.metric-sub{font-family:var(--mono);font-size:0.65rem;color:var(--text3);margin-top:3px}
+
+/* TRUST STRIP */
+.trust-strip{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:1rem 2rem;display:flex;gap:2.5rem;align-items:center;justify-content:center;flex-wrap:wrap}
+.trust-item{font-family:var(--mono);font-size:0.72rem;color:var(--text3);letter-spacing:0.08em;display:flex;align-items:center;gap:8px}
+.trust-check{color:var(--accent)}
+
+/* SECTIONS */
+.section{padding:5rem 2rem}
+.container{max-width:1100px;margin:0 auto}
+.section-tag{font-family:var(--mono);font-size:0.68rem;color:var(--text3);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:1rem;display:flex;align-items:center;gap:8px}
+.section-tag::before{content:'';display:block;width:20px;height:1px;background:var(--text3)}
+.section-title{font-family:var(--mono);font-size:clamp(1.8rem,4vw,2.8rem);font-weight:700;line-height:1.1;letter-spacing:-0.02em;margin-bottom:1rem;color:var(--text)}
+.section-sub{font-size:0.95rem;color:var(--text2);max-width:500px;line-height:1.7}
+
+/* FEAT GRID */
+.feat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--border);margin-top:3rem;border:1px solid var(--border)}
+@media(max-width:700px){.feat-grid{grid-template-columns:1fr}}
+.feat-card{background:var(--bg);padding:2.5rem 2rem;transition:background 0.2s}
+.feat-card:hover{background:var(--bg2)}
+.feat-num{font-family:var(--mono);font-size:0.7rem;color:var(--text3);letter-spacing:0.12em;margin-bottom:1.5rem}
+.feat-card h3{font-family:var(--mono);font-size:1.1rem;font-weight:600;color:var(--text);margin-bottom:0.75rem}
+.feat-card p{font-size:0.88rem;color:var(--text2);line-height:1.7}
+.feat-icon{width:36px;height:36px;background:var(--accent-dim);border-radius:3px;display:flex;align-items:center;justify-content:center;margin-bottom:1.2rem;font-size:1rem}
+
+/* HOW GRID */
+.how-grid{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start;margin-top:3rem}
+@media(max-width:800px){.how-grid{grid-template-columns:1fr}}
+.step-list{display:flex;flex-direction:column;gap:0}
+.step{display:flex;gap:1.5rem;padding:1.8rem 0;border-bottom:1px solid var(--border)}
+.step:last-child{border-bottom:none}
+.step-num{font-family:var(--mono);font-size:0.7rem;color:var(--accent);letter-spacing:0.1em;margin-top:2px;flex-shrink:0;width:24px}
+.step h4{font-family:var(--mono);font-size:0.95rem;font-weight:600;color:var(--text);margin-bottom:0.4rem}
+.step p{font-size:0.85rem;color:var(--text2);line-height:1.65}
+.perf-panel{background:var(--bg2);border:1px solid var(--border);border-radius:4px;overflow:hidden;position:sticky;top:80px}
+.perf-panel-header{padding:1rem 1.2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.perf-panel-title{font-family:var(--mono);font-size:0.72rem;color:var(--text2);letter-spacing:0.08em;display:flex;align-items:center;gap:8px}
+.perf-panel-age{font-family:var(--mono);font-size:0.65rem;color:var(--text3)}
+.stat-rows{padding:0.5rem 0}
+.stat-row{display:flex;align-items:center;justify-content:space-between;padding:0.8rem 1.2rem;border-bottom:1px solid var(--border)}
+.stat-row:last-child{border-bottom:none}
+.stat-row-label{font-family:var(--mono);font-size:0.72rem;color:var(--text2)}
+.stat-row-val{font-family:var(--mono);font-size:0.8rem;font-weight:600;color:var(--text)}
+.stat-row-val.good{color:var(--accent)}
+.chart-area{padding:1.2rem;border-top:1px solid var(--border)}
+.chart-label{font-family:var(--mono);font-size:0.65rem;color:var(--text3);margin-bottom:0.8rem;letter-spacing:0.08em}
+.mini-chart{height:48px;background:var(--bg3);border-radius:2px;overflow:hidden;position:relative;display:flex;align-items:flex-end;gap:1px;padding:4px}
+.bar{flex:1;background:rgba(0,229,160,0.2);border-radius:1px}
+.chart-line{position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);animation:sweep 3s infinite;opacity:0.4}
+@keyframes sweep{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+
+/* ROADMAP */
+.roadmap-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);margin-top:3rem;border:1px solid var(--border)}
+@media(max-width:900px){.roadmap-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:500px){.roadmap-grid{grid-template-columns:1fr}}
+.roadmap-card{background:var(--bg);padding:1.8rem 1.5rem;transition:background 0.2s}
+.roadmap-card:hover{background:var(--bg2)}
+.roadmap-card.done{border-top:2px solid var(--accent)}
+.roadmap-card.current{border-top:2px solid var(--yellow);background:var(--bg2)}
+.roadmap-card.future{border-top:2px solid var(--border2)}
+.roadmap-step{font-family:var(--mono);font-size:0.65rem;color:var(--text3);letter-spacing:0.1em;margin-bottom:0.75rem}
+.roadmap-status{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:0.62rem;padding:2px 8px;border-radius:2px;margin-bottom:1rem}
+.status-done{background:rgba(0,229,160,0.1);color:var(--accent)}
+.status-current{background:rgba(245,200,66,0.1);color:var(--yellow)}
+.status-soon{background:rgba(68,136,255,0.1);color:var(--blue)}
+.roadmap-card h4{font-family:var(--mono);font-size:0.9rem;font-weight:600;color:var(--text);margin-bottom:0.75rem}
+.roadmap-card ul{list-style:none}
+.roadmap-card li{font-size:0.78rem;color:var(--text2);padding:3px 0;display:flex;align-items:flex-start;gap:6px;line-height:1.4}
+.roadmap-card li::before{content:'·';color:var(--text3);flex-shrink:0}
+
+/* PRICING */
+.pricing-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);margin-top:3rem;border:1px solid var(--border)}
+@media(max-width:900px){.pricing-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:500px){.pricing-grid{grid-template-columns:1fr}}
+.pricing-card{background:var(--bg);padding:2rem 1.5rem;display:flex;flex-direction:column;transition:background 0.2s}
+.pricing-card:hover{background:var(--bg2)}
+.pricing-card.featured{background:var(--bg2);position:relative}
+.pricing-card.featured::before{content:'POPULAR';position:absolute;top:0;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:0.6rem;letter-spacing:0.15em;background:var(--accent);color:var(--bg);padding:3px 12px;border-radius:0 0 3px 3px;font-weight:700}
+.plan-name{font-family:var(--mono);font-size:0.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:0.75rem}
+.plan-price{font-family:var(--mono);font-size:2rem;font-weight:700;color:var(--text);line-height:1;margin-bottom:0.25rem}
+.plan-price span{font-size:0.85rem;font-weight:400;color:var(--text3)}
+.plan-desc{font-size:0.8rem;color:var(--text3);margin-bottom:1.5rem;line-height:1.5}
+.plan-feats{list-style:none;flex:1;margin-bottom:1.5rem}
+.plan-feats li{font-family:var(--mono);font-size:0.75rem;color:var(--text2);padding:5px 0;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:6px}
+.plan-feats li::before{content:'→';color:var(--accent);flex-shrink:0}
+.plan-btn{display:block;width:100%;text-align:center;padding:9px;font-family:var(--mono);font-size:0.78rem;font-weight:600;border-radius:3px;cursor:pointer;transition:all 0.2s;border:1px solid var(--border);background:transparent;color:var(--text)}
+.plan-btn:hover{border-color:var(--accent);color:var(--accent)}
+.pricing-card.featured .plan-btn{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.pricing-card.featured .plan-btn:hover{background:var(--accent2)}
+
+/* COMPARE TABLE */
+.compare-table{width:100%;border-collapse:collapse;margin-top:2rem;font-family:var(--mono);font-size:0.8rem}
+.compare-table th,.compare-table td{padding:0.9rem 1rem;border-bottom:1px solid var(--border);text-align:left}
+.compare-table th{font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);background:var(--bg2)}
+.compare-table td:first-child{color:var(--text2)}
+.compare-table td:last-child{color:var(--accent);font-weight:600}
+.compare-table tr:hover td{background:var(--bg2)}
+.compare-table .dim{color:var(--text3)}
+
+/* TECH FLOW */
+.tech-flow{display:grid;grid-template-columns:1fr;gap:0;margin-top:3rem;border:1px solid var(--border)}
+.tech-row{display:grid;grid-template-columns:80px 1fr;gap:0;border-bottom:1px solid var(--border)}
+.tech-row:last-child{border-bottom:none}
+.tech-row-num{background:var(--bg2);padding:2rem;display:flex;align-items:flex-start;justify-content:center;border-right:1px solid var(--border);font-family:var(--mono);font-size:0.7rem;color:var(--text3);padding-top:2.2rem}
+.tech-row-body{padding:2rem}
+.tech-row-body h3{font-family:var(--mono);font-size:1rem;font-weight:600;color:var(--text);margin-bottom:0.75rem}
+.tech-row-body p{font-size:0.88rem;color:var(--text2);line-height:1.7;max-width:600px}
+.highlight-box{background:var(--bg2);border-left:2px solid var(--accent);padding:1rem 1.5rem;margin-top:1rem;font-family:var(--mono);font-size:0.8rem;color:var(--text2);line-height:1.65}
+.highlight-box strong{color:var(--accent);display:block;margin-bottom:0.3rem;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em}
+
+/* PAGE HEADER */
+.page-header{padding:4rem 2rem 3rem;border-bottom:1px solid var(--border);background:var(--bg)}
+.page-header .container h1{font-family:var(--mono);font-size:clamp(1.8rem,5vw,3rem);font-weight:700;letter-spacing:-0.02em;color:var(--text);margin-bottom:0.75rem}
+.page-header .container p{font-size:0.95rem;color:var(--text2);max-width:540px;line-height:1.7}
+.page-header-tag{font-family:var(--mono);font-size:0.65rem;color:var(--text3);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:0.75rem}
+
+/* PERFORMANCE */
+.big-stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:2rem}
+@media(max-width:600px){.big-stat-grid{grid-template-columns:1fr 1fr}}
+.big-stat{background:var(--bg2);padding:1.5rem;display:flex;flex-direction:column;gap:4px}
+.big-stat-label{font-family:var(--mono);font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;display:flex;align-items:center;gap:6px}
+.big-stat-val{font-family:var(--mono);font-size:1.6rem;font-weight:700;color:var(--text)}
+.big-stat-val.accent{color:var(--accent)}
+.time-filter{display:flex;gap:4px;margin-bottom:1rem}
+.tf-btn{font-family:var(--mono);font-size:0.7rem;padding:4px 10px;background:transparent;border:1px solid var(--border);color:var(--text3);cursor:pointer;border-radius:2px;transition:all 0.2s}
+.tf-btn:hover,.tf-btn.active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+.inline-chart{background:var(--bg2);border:1px solid var(--border);border-radius:3px;padding:1.5rem;margin-top:1.5rem}
+.ic-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem}
+.ic-val{font-family:var(--mono);font-size:1.4rem;font-weight:700;color:var(--text)}
+.ic-change{font-family:var(--mono);font-size:0.72rem;color:var(--accent)}
+.ic-label{font-family:var(--mono);font-size:0.65rem;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase}
+.ic-bars{display:flex;align-items:flex-end;gap:2px;height:60px;margin-top:1rem}
+.ic-bar{flex:1;border-radius:1px;min-height:4px}
+.node-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:0.75rem;margin-top:2rem}
+.node-table th{padding:0.7rem 1rem;border-bottom:1px solid var(--border);font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);text-align:left;background:var(--bg2)}
+.node-table td{padding:0.7rem 1rem;border-bottom:1px solid var(--border);color:var(--text2)}
+.node-table tr:hover td{background:var(--bg2)}
+.node-health{color:var(--accent);font-size:0.7rem}
+.node-id{color:var(--text3);font-size:0.7rem}
+.paging{display:flex;gap:8px;margin-top:1rem;align-items:center}
+.page-btn{font-family:var(--mono);font-size:0.72rem;padding:4px 10px;background:transparent;border:1px solid var(--border);color:var(--text2);cursor:pointer;border-radius:2px;transition:all 0.2s}
+.page-btn:hover,.page-btn.active{border-color:var(--accent);color:var(--accent)}
+
+/* AI AGENTS PAGE */
+#page-ai{display:none}
+#page-ai.active{display:flex;flex-direction:column}
+.ai-layout{display:grid;grid-template-columns:260px 1fr;height:calc(100vh - 56px)}
+
+/* SIDEBAR */
+.ai-sidebar{border-right:1px solid var(--border);background:var(--bg2);display:flex;flex-direction:column;overflow:hidden}
+.ai-sidebar-top{padding:14px;border-bottom:1px solid var(--border)}
+.ai-sidebar-label{font-family:var(--mono);font-size:0.62rem;color:var(--text3);letter-spacing:0.15em;text-transform:uppercase;padding:12px 14px 6px}
+.config-input-wrap{margin-bottom:8px}
+.config-label{font-family:var(--mono);font-size:0.62rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;display:block;margin-bottom:3px}
+.config-input{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:11px;padding:6px 8px;border-radius:2px;outline:none;transition:border-color 0.2s}
+.config-input:focus{border-color:var(--accent)}
+.agent-list{flex:1;overflow-y:auto;padding:6px 0}
+.agent-group{font-family:var(--mono);font-size:0.6rem;color:var(--text3);letter-spacing:0.12em;text-transform:uppercase;padding:10px 14px 4px}
+.agent-item{width:100%;background:none;border:none;color:var(--text2);font-family:var(--mono);font-size:11.5px;padding:8px 14px;text-align:left;cursor:pointer;display:flex;align-items:center;gap:8px;border-left:2px solid transparent;transition:all 0.15s}
+.agent-item:hover{background:rgba(0,229,160,0.05);color:var(--accent);border-left-color:var(--accent)}
+.agent-item.active{background:rgba(0,229,160,0.08);color:var(--accent);border-left-color:var(--accent)}
+.agent-icon{width:18px;text-align:center;font-size:13px;flex-shrink:0}
+.pipeline-trigger{margin:10px 14px;padding:9px;background:linear-gradient(135deg,rgba(0,229,160,0.12),rgba(68,136,255,0.12));border:1px solid rgba(0,229,160,0.3);color:var(--accent);font-family:var(--mono);font-weight:600;font-size:12px;letter-spacing:0.08em;cursor:pointer;border-radius:2px;text-align:center;transition:all 0.2s}
+.pipeline-trigger:hover{background:linear-gradient(135deg,rgba(0,229,160,0.2),rgba(68,136,255,0.2));box-shadow:0 0 16px rgba(0,229,160,0.15)}
+
+/* WORKSPACE */
+.ai-workspace{display:flex;flex-direction:column;overflow:hidden}
+.ai-header{padding:14px 20px;border-bottom:1px solid var(--border);background:var(--bg2);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-shrink:0}
+.ai-header-left h2{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--text);margin-bottom:2px}
+.ai-header-left p{font-family:var(--mono);font-size:11px;color:var(--text3)}
+.run-btn{padding:8px 18px;background:var(--accent);color:var(--bg);border:none;font-family:var(--mono);font-weight:700;font-size:12px;letter-spacing:0.08em;cursor:pointer;border-radius:2px;transition:all 0.2s;flex-shrink:0}
+.run-btn:hover:not(:disabled){box-shadow:0 0 16px rgba(0,229,160,0.35);transform:translateY(-1px)}
+.run-btn:disabled{opacity:0.4;cursor:not-allowed}
+.run-btn.running{background:#4488ff;color:#fff;animation:run-glow 1.5s infinite}
+@keyframes run-glow{0%,100%{box-shadow:0 0 8px rgba(68,136,255,0.4)}50%{box-shadow:0 0 22px rgba(68,136,255,0.7)}}
+
+/* CHAT */
+.chat-area{flex:1;overflow-y:auto;padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--text3);text-align:center;padding:2rem}
+.empty-state .e-icon{font-size:40px;opacity:0.25}
+.empty-state h3{font-family:var(--mono);font-size:14px;color:var(--border2);letter-spacing:0.1em;text-transform:uppercase}
+.empty-state p{font-size:12px;color:var(--text3);max-width:300px;line-height:1.6}
+.msg{display:flex;flex-direction:column;gap:3px}
+.msg-label{font-size:10px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;display:flex;align-items:center;gap:5px;font-family:var(--mono)}
+.msg-label.al{color:var(--accent)}
+.msg-label.ul{color:#4488ff}
+.msg-bubble{padding:11px 14px;border-radius:3px;font-size:12.5px;line-height:1.75;white-space:pre-wrap;word-wrap:break-word;font-family:var(--mono)}
+.msg-bubble.agent{background:var(--bg2);border:1px solid var(--border);border-left:2px solid var(--accent);color:var(--text)}
+.msg-bubble.user{background:rgba(68,136,255,0.07);border:1px solid rgba(68,136,255,0.2);border-left:2px solid #4488ff;color:var(--text)}
+.msg-bubble.system{background:rgba(0,229,160,0.04);border:1px solid rgba(0,229,160,0.15);color:var(--accent);font-size:11.5px}
+.msg-bubble.error{background:rgba(255,68,68,0.06);border:1px solid rgba(255,68,68,0.2);color:var(--red)}
+.typing{display:flex;gap:4px;padding:8px 0;align-items:center}
+.tdot{width:5px;height:5px;border-radius:50%;background:var(--accent);animation:tbounce 1.2s infinite}
+.tdot:nth-child(2){animation-delay:0.2s}
+.tdot:nth-child(3){animation-delay:0.4s}
+@keyframes tbounce{0%,60%,100%{transform:translateY(0);opacity:0.4}30%{transform:translateY(-5px);opacity:1}}
+
+/* INPUT BAR */
+.ai-input-bar{padding:12px 20px;border-top:1px solid var(--border);background:var(--bg2);display:flex;gap:8px;align-items:flex-end;flex-shrink:0}
+.ai-input{flex:1;min-height:38px;max-height:100px;resize:none;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:12px;padding:8px 10px;border-radius:2px;outline:none;transition:border-color 0.2s}
+.ai-input:focus{border-color:var(--accent)}
+.send-btn{padding:8px 14px;background:var(--bg3);border:1px solid var(--border);color:var(--accent);font-family:var(--mono);font-size:11px;cursor:pointer;border-radius:2px;transition:all 0.2s;align-self:flex-end}
+.send-btn:hover:not(:disabled){border-color:var(--accent);background:rgba(0,229,160,0.08)}
+.send-btn:disabled{opacity:0.35;cursor:not-allowed}
+
+/* CREDIT BANNER */
+.credit-banner{background:linear-gradient(135deg,rgba(0,229,160,0.06),rgba(68,136,255,0.06));border:1px solid rgba(0,229,160,0.2);border-radius:3px;padding:12px 16px;margin-bottom:1.5rem;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.credit-banner-icon{font-size:20px;flex-shrink:0}
+.credit-banner-text{font-family:var(--mono);font-size:0.75rem;color:var(--text2);line-height:1.5;flex:1}
+.credit-banner-text strong{color:var(--accent);display:block;margin-bottom:2px}
+.credit-banner-link{font-family:var(--mono);font-size:0.72rem;color:var(--accent);text-decoration:none;border:1px solid rgba(0,229,160,0.3);padding:4px 10px;border-radius:2px;white-space:nowrap;transition:all 0.2s;flex-shrink:0}
+.credit-banner-link:hover{background:rgba(0,229,160,0.1);border-color:var(--accent)}
+
+/* AGENTS DOCS PAGE */
+.code-block{background:var(--bg2);border:1px solid var(--border);border-radius:3px;overflow:hidden;margin-top:1.5rem}
+.code-header{display:flex;align-items:center;justify-content:space-between;padding:0.7rem 1rem;border-bottom:1px solid var(--border);background:var(--bg3)}
+.code-fname{font-family:var(--mono);font-size:0.7rem;color:var(--text3)}
+.code-copy{font-family:var(--mono);font-size:0.7rem;color:var(--text3);cursor:pointer;transition:color 0.2s}
+.code-copy:hover{color:var(--accent)}
+.code-body{padding:1.2rem;overflow-x:auto}
+.code-body pre{font-family:var(--mono);font-size:0.8rem;color:var(--text);line-height:1.7;margin:0;white-space:pre}
+.code-comment{color:var(--text3)}
+.code-string{color:var(--accent)}
+.agent-doc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:2.5rem}
+@media(max-width:700px){.agent-doc-grid{grid-template-columns:1fr}}
+.agent-doc-card{background:var(--bg2);border:1px solid var(--border);border-radius:3px;padding:1.5rem;transition:border-color 0.2s}
+.agent-doc-card:hover{border-color:var(--border2)}
+.agent-doc-card h4{font-family:var(--mono);font-size:0.88rem;font-weight:600;color:var(--text);margin-bottom:0.5rem}
+.agent-doc-card p{font-size:0.82rem;color:var(--text2);line-height:1.6}
+.agent-tag{display:inline-block;font-family:var(--mono);font-size:0.62rem;padding:2px 8px;background:var(--accent-dim);color:var(--accent);border-radius:2px;margin-bottom:0.75rem;letter-spacing:0.08em}
+
+/* CTA BAND */
+.cta-band{background:var(--bg2);border-top:1px solid var(--border);padding:4rem 2rem;text-align:center}
+.cta-band h2{font-family:var(--mono);font-size:clamp(1.6rem,4vw,2.5rem);font-weight:700;color:var(--text);margin-bottom:0.75rem;letter-spacing:-0.02em}
+.cta-band p{font-size:0.9rem;color:var(--text2);max-width:420px;margin:0 auto 2rem;line-height:1.7}
+.cta-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+/* FOOTER */
+footer{background:var(--bg2);border-top:1px solid var(--border);padding:3rem 2rem}
+.footer-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr auto;gap:4rem;align-items:start}
+@media(max-width:600px){.footer-inner{grid-template-columns:1fr}}
+.footer-brand{display:flex;align-items:center;gap:10px;margin-bottom:0.75rem;cursor:pointer}
+.footer-tagline{font-size:0.82rem;color:var(--text3);margin-bottom:1.5rem;line-height:1.5}
+.footer-email{font-family:var(--mono);font-size:0.8rem;color:var(--accent)}
+.footer-links{display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+@media(max-width:600px){.footer-links{align-items:flex-start}}
+.footer-link{font-family:var(--mono);font-size:0.75rem;color:var(--text3);cursor:pointer;transition:color 0.2s}
+.footer-link:hover{color:var(--text)}
+.footer-bottom{max-width:1100px;margin:2rem auto 0;padding-top:1.5rem;border-top:1px solid var(--border);font-family:var(--mono);font-size:0.68rem;color:var(--text3);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem}
+.footer-credit{font-family:var(--mono);font-size:0.68rem;color:var(--text3);margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);max-width:1100px;margin-left:auto;margin-right:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.footer-credit a{color:var(--accent);text-decoration:none;transition:opacity 0.2s}
+.footer-credit a:hover{opacity:0.75}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* MOBILE */
+.mobile-menu-btn{display:none;background:none;border:none;cursor:pointer;padding:4px;flex-direction:column;gap:5px}
+.mobile-menu-btn span{display:block;width:22px;height:1.5px;background:var(--text2)}
+@media(max-width:800px){
+  .nav-links,.nav-actions{display:none}
+  .nav-links.open{display:flex;flex-direction:column;position:fixed;top:56px;left:0;right:0;background:var(--bg);border-bottom:1px solid var(--border);padding:1rem;z-index:999}
+  .mobile-menu-btn{display:flex}
+}
+
+/* REVEAL */
+.reveal{opacity:0;transform:translateY(14px);transition:opacity 0.5s ease,transform 0.5s ease}
+.reveal.visible{opacity:1;transform:none}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo" onclick="showPage('home')">
+    <div class="nav-logo-mark"><span></span><span></span><span></span><span></span></div>
+    blockmachine
+  </div>
+  <div class="nav-links" id="nav-links">
+    <div class="nav-link" onclick="showPage('performance')">Performance</div>
+    <div class="nav-link" onclick="showPage('technology')">Technology</div>
+    <div class="nav-link" onclick="showPage('pricing')">Pricing</div>
+    <div class="nav-link" onclick="showPage('docs')">Docs</div>
+    <div class="nav-link" onclick="showPage('ai')" style="color:var(--accent)">⬡ AI Assistant</div>
+  </div>
+  <div class="nav-actions">
+    <span class="nav-ai-badge">AI POWERED</span>
+    <div class="nav-signin">Sign In</div>
+    <div class="nav-cta" onclick="showPage('pricing')">Get Started</div>
+  </div>
+  <button class="mobile-menu-btn" onclick="toggleMobileMenu()"><span></span><span></span><span></span></button>
+</nav>
+
+<!-- HOME -->
+<div id="page-home" class="page active">
+  <div class="hero">
+    <div class="hero-grid-bg"></div>
+    <div class="hero-glow"></div>
+    <div class="hero-inner">
+      <div class="hero-tag">Powered by Bittensor</div>
+      <h1 class="hero-title">Fast, correct,<br><span class="hl">verifiable</span><br>blockchain RPC.</h1>
+      <p class="hero-desc">Blockmachine provides RPC and archive node access across multiple chains. Responses are independently verified for correctness, and live performance data is public.</p>
+      <div class="hero-actions">
+        <button class="btn btn-fill" onclick="showPage('pricing')">Get Started →</button>
+        <button class="btn btn-outline" onclick="showPage('performance')">View live performance</button>
+        <button class="btn btn-ai" onclick="showPage('ai')">⬡ Ask AI Assistant</button>
+      </div>
+      <div class="metrics-bar reveal" id="hero-metrics">
+        <div class="metric-cell">
+          <div class="metric-label"><span class="metric-dot"></span>Avg Latency</div>
+          <div class="metric-value" id="m-latency">243ms</div>
+          <div class="metric-sub">↗ 6% vs yesterday</div>
+        </div>
+        <div class="metric-cell">
+          <div class="metric-label">Success Rate</div>
+          <div class="metric-value green" id="m-success">100.00%</div>
+          <div class="metric-sub">24h window</div>
+        </div>
+        <div class="metric-cell">
+          <div class="metric-label">Requests / 24h</div>
+          <div class="metric-value" id="m-requests">316.5M</div>
+          <div class="metric-sub">↑ from 298M</div>
+        </div>
+        <div class="metric-cell">
+          <div class="metric-label">Active Nodes</div>
+          <div class="metric-value" id="m-nodes">112</div>
+          <div class="metric-sub">of 136 total</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="trust-strip">
+    <div class="trust-item"><span class="trust-check">✓</span> Standard JSON-RPC</div>
+    <div class="trust-item"><span class="trust-check">✓</span> Archive node access</div>
+    <div class="trust-item"><span class="trust-check">✓</span> Independently verified</div>
+    <div class="trust-item"><span class="trust-check">✓</span> All performance data public</div>
+    <div class="trust-item"><span class="trust-check">✓</span> USDC payments</div>
+    <div class="trust-item"><span class="trust-check">⬡</span> AI-powered assistant</div>
+  </div>
+
+  <div class="section">
+    <div class="container">
+      <div class="section-tag reveal">What you get</div>
+      <h2 class="section-title reveal">Infrastructure that competes<br>to serve you.</h2>
+      <p class="section-sub reveal">A network of competing suppliers drives costs down — not up. You get lower prices, better uptime, and proof it's working.</p>
+      <div class="feat-grid">
+        <div class="feat-card reveal">
+          <div class="feat-num">[01]</div>
+          <div class="feat-icon">⚡</div>
+          <h3>Competitive pricing</h3>
+          <p>A network of competing miners bid for your traffic. Market forces keep costs down — not artificial discounts that expire.</p>
+        </div>
+        <div class="feat-card reveal">
+          <div class="feat-num">[02]</div>
+          <div class="feat-icon">🔗</div>
+          <h3>Fast, reliable access</h3>
+          <p>Low-latency RPC across a distributed node network. Requests are routed to the fastest available node automatically.</p>
+        </div>
+        <div class="feat-card reveal">
+          <div class="feat-num">[03]</div>
+          <div class="feat-icon">✓</div>
+          <h3>Verified correctness</h3>
+          <p>Every node is continuously tested against known-good references. Nodes that return wrong data are banned permanently.</p>
+        </div>
+        <div class="feat-card reveal">
+          <div class="feat-num">[04]</div>
+          <div class="feat-icon">⬡</div>
+          <h3>AI-powered assistant</h3>
+          <p>Specialized AI agents help you integrate, optimize, and troubleshoot — from picking the right plan to debugging RPC calls.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI PROMO SECTION -->
+  <div class="section" style="background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+    <div class="container">
+      <div class="section-tag reveal">AI Assistant</div>
+      <h2 class="section-title reveal">Intelligent agents for<br>every part of your stack.</h2>
+      <p class="section-sub reveal">Five specialized agents — each powered by Claude — covering integration, diagnostics, chain research, cost optimization, and a full onboarding pipeline.</p>
+      <div class="how-grid" style="margin-top:2.5rem">
+        <div class="step-list">
+          <div class="step reveal">
+            <div class="step-num">⚙️</div>
+            <div><h4>RPC Integrator</h4><p>Generates ready-to-deploy connection code for your language and framework. Just describe your stack.</p></div>
+          </div>
+          <div class="step reveal">
+            <div class="step-num">🩺</div>
+            <div><h4>Node Diagnostics</h4><p>Paste your latency data, error codes, or node IDs and get a structured diagnosis with action items.</p></div>
+          </div>
+          <div class="step reveal">
+            <div class="step-num">🔬</div>
+            <div><h4>Chain Research</h4><p>Ask anything about supported chains, methods, archive depth, and compatibility requirements.</p></div>
+          </div>
+          <div class="step reveal">
+            <div class="step-num">💰</div>
+            <div><h4>Cost Optimizer</h4><p>Describe your request volume and patterns. Get a plan recommendation with RU budget projections.</p></div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;justify-content:center">
+          <div style="background:var(--bg3);border:1px solid var(--border);border-left:2px solid var(--accent);padding:16px 18px;border-radius:3px;font-family:var(--mono);font-size:12px;color:var(--text2);line-height:1.7">
+            <div style="color:var(--accent);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:8px">⬡ RPC INTEGRATOR</div>
+            "I'm using ethers.js with Next.js. How do I point my provider at Blockmachine and handle rate-limit retries?"
+          </div>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-left:2px solid #4488ff;padding:16px 18px;border-radius:3px;font-family:var(--mono);font-size:12px;color:var(--text2);line-height:1.7">
+            <div style="color:#4488ff;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:8px">AGENT RESPONSE</div>
+            Here's a drop-in ethers.js provider with exponential backoff for -32029 errors and a fallback to your secondary endpoint...
+          </div>
+          <button class="btn btn-ai" onclick="showPage('ai')" style="align-self:flex-start;margin-top:4px">Launch AI Assistant →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="container">
+      <div class="section-tag reveal">Roadmap</div>
+      <h2 class="section-title reveal">Where we are.<br>Where we're going.</h2>
+      <div class="roadmap-grid">
+        <div class="roadmap-card done reveal"><div class="roadmap-step">PHASE 01</div><div class="roadmap-status status-done">✓ complete</div><h4>Build</h4><ul><li>Core infrastructure</li><li>Gateway & routing</li><li>Validator protocols</li><li>Performance dashboards</li></ul></div>
+        <div class="roadmap-card done reveal"><div class="roadmap-step">PHASE 02</div><div class="roadmap-status status-done">✓ complete</div><h4>Internal</h4><ul><li>Internal miners live</li><li>Powering taostats</li><li>End-to-end with real traffic</li></ul></div>
+        <div class="roadmap-card current reveal"><div class="roadmap-step">PHASE 03</div><div class="roadmap-status status-current">⬤ in progress</div><h4>Miner onboarding</h4><ul><li>Open miner registration</li><li>Public miner dashboards</li><li>Docs & tooling</li></ul></div>
+        <div class="roadmap-card future reveal"><div class="roadmap-step">PHASE 04</div><div class="roadmap-status status-soon">→ next</div><h4>Customer launch</h4><ul><li>Account creation</li><li>API keys</li><li>Usage + billing dashboard</li></ul></div>
+        <div class="roadmap-card future reveal"><div class="roadmap-step">PHASE 05</div><div class="roadmap-status status-soon">→ planned</div><h4>Multi-chain</h4><ul><li>Ethereum + BSC</li><li>Additional EVM chains</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cta-band">
+    <div class="section-tag" style="justify-content:center;margin-bottom:1.5rem">Get started</div>
+    <h2>Start building on<br>verified infrastructure.</h2>
+    <p>Standard JSON-RPC. No SDK. No lock-in. No surprises.</p>
+    <div class="cta-actions">
+      <button class="btn btn-fill" onclick="showPage('pricing')">See plans →</button>
+      <button class="btn btn-outline" onclick="showPage('performance')">View live data</button>
+      <button class="btn btn-ai" onclick="showPage('ai')">⬡ Ask the AI</button>
+    </div>
+  </div>
+</div>
+
+<!-- PERFORMANCE -->
+<div id="page-performance" class="page">
+  <div class="page-header"><div class="container"><div class="page-header-tag">Live data</div><h1>Nodes Performance</h1><p>Live operational metrics for the supplier network. All data is public and updated in real time.</p></div></div>
+  <div class="section"><div class="container">
+    <div class="time-filter">
+      <button class="tf-btn" onclick="setTF(this,'15m')">15m</button>
+      <button class="tf-btn active" onclick="setTF(this,'1h')">1h</button>
+      <button class="tf-btn" onclick="setTF(this,'6h')">6h</button>
+      <button class="tf-btn" onclick="setTF(this,'24h')">24h</button>
+    </div>
+    <div class="big-stat-grid reveal">
+      <div class="big-stat"><div class="big-stat-label"><span class="metric-dot"></span>Success Rate</div><div class="big-stat-val accent">100.00%</div></div>
+      <div class="big-stat"><div class="big-stat-label">Error Rate</div><div class="big-stat-val">0.00%</div></div>
+      <div class="big-stat"><div class="big-stat-label">Requests / sec</div><div class="big-stat-val">3,626</div></div>
+      <div class="big-stat"><div class="big-stat-label">CU Served</div><div class="big-stat-val">13.0M</div></div>
+      <div class="big-stat"><div class="big-stat-label">Total Requests</div><div class="big-stat-val">13.0M</div></div>
+      <div class="big-stat"><div class="big-stat-label">Nodes online</div><div class="big-stat-val">112 <span style="font-size:0.85rem;color:var(--text3)">/ 136</span></div></div>
+    </div>
+    <div class="inline-chart reveal">
+      <div class="ic-header"><div><div class="ic-label">AVG LATENCY — LAST 1H</div><div class="ic-val">236.97 ms</div></div><div class="ic-change">↗ 2%</div></div>
+      <div class="ic-bars" id="perf-chart"></div>
+    </div>
+    <h3 class="section-title reveal" style="font-size:1.2rem;margin-top:3rem;margin-bottom:0">Nodes (136)</h3>
+    <table class="node-table reveal"><thead><tr><th>Validator</th><th>Node ID</th><th>Status</th><th>Latency</th><th>Success</th><th>Score</th><th>Requests</th><th>Errors</th></tr></thead><tbody id="node-tbody"></tbody></table>
+    <div class="paging" id="node-paging"></div>
+  </div></div>
+</div>
+
+<!-- TECHNOLOGY -->
+<div id="page-technology" class="page">
+  <div class="page-header"><div class="container"><div class="page-header-tag">Architecture</div><h1>How blockmachine works</h1><p>From request routing and market allocation to verification, scoring, and emissions.</p></div></div>
+  <div class="section"><div class="container">
+    <div class="tech-flow reveal">
+      <div class="tech-row"><div class="tech-row-num">01</div><div class="tech-row-body"><h3>Miners</h3><p>Suppliers of infrastructure. Each miner runs full or archive nodes and competes to serve live RPC traffic. Miners bid a USD-denominated price per compute unit and are evaluated continuously on latency, uptime, reliability, and correctness.</p><div class="highlight-box"><strong>The market mechanism</strong>There is no allocation, no queue, no scheduling. Miners set a price, the gateway measures their performance, and the market decides who gets work.</div></div></div>
+      <div class="tech-row"><div class="tech-row-num">02</div><div class="tech-row-body"><h3>Gateway</h3><p>The single entry point for all requests. It authenticates, meters, routes, and logs. The gateway decides which miner gets each request based on quality and price.</p><div class="highlight-box"><strong>Routing score</strong>A miner that fails the quality threshold gets almost nothing. The routing score combines price and quality into a single allocation — visible in real time.</div></div></div>
+      <div class="tech-row"><div class="tech-row-num">03</div><div class="tech-row-body"><h3>Clients</h3><p>The client receives verified responses through a standard JSON-RPC endpoint. No tokens, no Bittensor, no miner selection. Just an API that works.</p></div></div>
+      <div class="tech-row"><div class="tech-row-num">04</div><div class="tech-row-body"><h3>Epoch boundary</h3><p>An epoch is 360 blocks — roughly 72 minutes. Everything that happened is frozen, finalised, and handed to validators for scoring. No real-time judgement. No live intervention.</p></div></div>
+      <div class="tech-row"><div class="tech-row-num">05</div><div class="tech-row-body"><h3>Verification</h3><p>Validators re-execute sampled requests against trusted reference infrastructure. The miner's logged response is compared against ground truth.</p><div class="highlight-box"><strong>Deterministic verification</strong>If the reference node returns a different hash, the miner lied. Match or mismatch — no threshold, no benefit of the doubt.</div></div></div>
+      <div class="tech-row"><div class="tech-row-num">06</div><div class="tech-row-body"><h3>Correctness enforcement</h3><p>If a miner's response doesn't match the reference — even once — the miner is permanently banned. Not penalised. Not warned.</p><div class="highlight-box"><strong>Banned, not warned</strong>A single incorrect response ends a miner's participation. This creates the strongest possible correctness incentive.</div></div></div>
+    </div>
+  </div></div>
+</div>
+
+<!-- PRICING -->
+<div id="page-pricing" class="page">
+  <div class="page-header"><div class="container"><div class="page-header-tag">Pricing</div><h1>Usage-based pricing.<br>No surprises.</h1><p>A network of competing suppliers drives costs down. You pay per request unit — only for what succeeds.</p></div></div>
+  <div class="section"><div class="container">
+    <div class="pricing-grid reveal">
+      <div class="pricing-card"><div class="plan-name">Free</div><div class="plan-price">$0<span>/mo</span></div><div class="plan-desc">Start building immediately</div><ul class="plan-feats"><li>1 API key</li><li>10K request units / month</li><li>5,000 requests / min</li><li>Archive node access</li><li>Usage dashboard</li><li>USDC payments</li><li>Trace API</li></ul><button class="plan-btn">Get started</button></div>
+      <div class="pricing-card featured"><div class="plan-name">Pro</div><div class="plan-price">$25<span>/mo</span></div><div class="plan-desc">Higher limits, cheaper overages</div><ul class="plan-feats"><li>Up to 3 API keys</li><li>20M request units / month</li><li>12,000 requests / min</li><li>Additional RUs $3 per 1M</li><li>Archive node access</li><li>Usage dashboard</li><li>USDC payments</li><li>Trace API</li></ul><button class="plan-btn">Get started</button></div>
+      <div class="pricing-card"><div class="plan-name">Business</div><div class="plan-price">$125<span>/mo</span></div><div class="plan-desc">High volume with dedicated support</div><ul class="plan-feats"><li>Up to 5 API keys</li><li>100M request units / month</li><li>30,000 requests / min</li><li>Additional RUs $2 per 1M</li><li>Archive node access</li><li>Usage dashboard</li><li>USDC payments</li><li>Trace API</li></ul><button class="plan-btn">Get started</button></div>
+      <div class="pricing-card"><div class="plan-name">Enterprise</div><div class="plan-price">$999<span>/mo</span></div><div class="plan-desc">Maximum scale for production workloads</div><ul class="plan-feats"><li>Up to 10 API keys</li><li>1B request units / month</li><li>250,000 requests / min</li><li>Additional RUs $1 per 1M</li><li>Archive node access</li><li>Usage dashboard</li><li>USDC payments</li><li>Trace API</li></ul><button class="plan-btn">Get started</button></div>
+    </div>
+    <div class="section-tag reveal" style="margin-top:4rem">Comparison</div>
+    <h2 class="section-title reveal" style="font-size:1.5rem">How we compare</h2>
+    <table class="compare-table reveal"><thead><tr><th>Feature</th><th>Alchemy</th><th>QuickNode</th><th>dRPC</th><th>blockmachine</th></tr></thead><tbody>
+      <tr><td>Pricing model</td><td class="dim">Per RU (tiered)</td><td class="dim">Per API credit</td><td class="dim">Per RU (tiered)</td><td>Per RU (usage-based)</td></tr>
+      <tr><td>Price driver</td><td class="dim">Provider sets price</td><td class="dim">Provider sets price</td><td class="dim">Provider sets price</td><td>Competing suppliers</td></tr>
+      <tr><td>Correctness</td><td class="dim">Trust the provider</td><td class="dim">Trust the provider</td><td class="dim">Trust the provider</td><td>Independently verified</td></tr>
+      <tr><td>Lock-in</td><td class="dim">Proprietary APIs</td><td class="dim">Proprietary APIs</td><td class="dim">Proprietary features</td><td>Standard JSON-RPC</td></tr>
+    </tbody></table>
+  </div></div>
+</div>
+
+<!-- DOCS -->
+<div id="page-docs" class="page">
+  <div class="page-header"><div class="container"><div class="page-header-tag">Docs / AI Agents</div><h1>Use AI to integrate<br>Blockmachine.</h1><p>Every docs page ships as raw markdown. Point any AI agent at it and it can help you wire Blockmachine into your stack.</p></div></div>
+  <div class="section"><div class="container">
+
+    <div class="credit-banner reveal">
+      <div class="credit-banner-icon">⬡</div>
+      <div class="credit-banner-text">
+        <strong>AI Intelligence Layer — Mason Nguyen</strong>
+        The agent framework powering Blockmachine's AI Assistant was designed and built by Mason Nguyen at Autonomous Resource Management.
+      </div>
+      <a href="https://autonomousresourcemanagement.com/" target="_blank" class="credit-banner-link">autonomousresourcemanagement.com →</a>
+    </div>
+
+    <div class="agent-doc-grid">
+      <div class="agent-doc-card reveal"><div class="agent-tag">Integration</div><h4>RPC Integrator</h4><p>Generates connection code for your language and framework. Handles auth, retries, and error codes out of the box.</p></div>
+      <div class="agent-doc-card reveal"><div class="agent-tag">Diagnostics</div><h4>Node Diagnostics</h4><p>Paste latency data or error codes. Get a structured diagnosis with prioritized action items.</p></div>
+      <div class="agent-doc-card reveal"><div class="agent-tag">Research</div><h4>Chain Research</h4><p>Ask anything about supported chains, methods, archive depth, and compatibility requirements.</p></div>
+      <div class="agent-doc-card reveal"><div class="agent-tag">Planning</div><h4>Cost Optimizer</h4><p>Describe your usage patterns. Get a plan recommendation with RU budget projections.</p></div>
+      <div class="agent-doc-card reveal"><div class="agent-tag">Onboarding</div><h4>Full Pipeline</h4><p>Runs all four agents in sequence for a complete integration and optimization assessment.</p></div>
+      <div class="agent-doc-card reveal" style="border-color:rgba(0,229,160,0.25);cursor:pointer" onclick="showPage('ai')"><div class="agent-tag">Launch</div><h4>Open AI Assistant →</h4><p>Access all agents directly in the browser. Configure your endpoint and start asking.</p></div>
+    </div>
+
+    <div class="section-tag reveal" style="margin-top:4rem">Programmatic access</div>
+    <h2 class="section-title reveal" style="font-size:1.5rem">Fetch docs as markdown</h2>
+    <div class="code-block reveal"><div class="code-header"><span class="code-fname">fetch-docs.sh</span><span class="code-copy" onclick="copyCode(this,'fetch-block')">Copy</span></div><div class="code-body" id="fetch-block"><pre><span class="code-comment"># Full API guide as markdown</span>
+curl https://blockmachine.io/docs/integrate-rpc.md
+
+<span class="code-comment"># Complete agent reference</span>
+curl https://blockmachine.io/llm.txt</pre></div></div>
+
+    <div class="section-tag reveal" style="margin-top:3rem">For coding agents</div>
+    <div class="code-block reveal"><div class="code-header"><span class="code-fname">CLAUDE.md / AGENTS.md</span><span class="code-copy" onclick="copyCode(this,'agent-block')">Copy</span></div><div class="code-body" id="agent-block"><pre><span class="code-comment"># Blockmachine — agent context</span>
+When touching Bittensor RPC, use <span class="code-string">https://rpc.blockmachine.io</span>
+Full docs: <span class="code-string">https://blockmachine.io/docs/integrate-rpc.md</span>
+Auth: <span class="code-string">`Authorization: Bearer $BLOCKMACHINE_API_KEY`</span>
+Never ship API keys to the browser.</pre></div></div>
+  </div></div>
+</div>
+
+<!-- AI ASSISTANT PAGE -->
+<div id="page-ai" class="page">
+  <div class="ai-layout">
+    <aside class="ai-sidebar">
+      <div class="ai-sidebar-top">
+        <div style="font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px">Target Config</div>
+        <div class="config-input-wrap"><label class="config-label">Endpoint / URL</label><input class="config-input" id="cfg-url" placeholder="https://rpc.blockmachine.io" /></div>
+        <div class="config-input-wrap"><label class="config-label">Chain</label><input class="config-input" id="cfg-chain" placeholder="Bittensor, Ethereum, BSC…" /></div>
+        <div class="config-input-wrap"><label class="config-label">Stack / Framework</label><input class="config-input" id="cfg-stack" placeholder="ethers.js, web3.py, Go…" /></div>
+        <div class="config-input-wrap"><label class="config-label">Monthly Requests (est.)</label><input class="config-input" id="cfg-vol" placeholder="e.g. 50M" /></div>
+      </div>
+
+      <button class="pipeline-trigger" onclick="selectAgent('pipeline')">⚡ Full Pipeline</button>
+
+      <div class="agent-list">
+        <div class="agent-group">Core Agents</div>
+        <button class="agent-item" onclick="selectAgent('integrator')"><span class="agent-icon">⚙️</span> RPC Integrator</button>
+        <button class="agent-item" onclick="selectAgent('diagnostics')"><span class="agent-icon">🩺</span> Node Diagnostics</button>
+        <button class="agent-item" onclick="selectAgent('research')"><span class="agent-icon">🔬</span> Chain Research</button>
+        <button class="agent-item" onclick="selectAgent('cost')"><span class="agent-icon">💰</span> Cost Optimizer</button>
+      </div>
+
+      <div style="padding:12px 14px;border-top:1px solid var(--border);margin-top:auto">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--text3);line-height:1.5">AI layer by <a href="https://autonomousresourcemanagement.com/" target="_blank" style="color:var(--accent);text-decoration:none">Mason Nguyen</a><br>Autonomous Resource Mgmt</div>
+      </div>
+    </aside>
+
+    <section class="ai-workspace">
+      <div class="ai-header">
+        <div class="ai-header-left">
+          <h2 id="ai-title">Select an Agent</h2>
+          <p id="ai-desc">Choose an agent from the sidebar or run the full pipeline</p>
+        </div>
+        <button class="run-btn" id="run-btn" onclick="runAgent()" disabled>▶ RUN</button>
+      </div>
+
+      <div class="chat-area" id="chat-area">
+        <div class="empty-state" id="empty-state">
+          <div class="e-icon">⬡</div>
+          <h3>Blockmachine AI Assistant</h3>
+          <p>Configure your target in the sidebar, pick an agent, and click Run. Each agent is powered by Claude and specializes in a different dimension of blockchain infrastructure.</p>
+          <div style="margin-top:12px;font-family:var(--mono);font-size:10px;color:var(--text3)">AI framework by <a href="https://autonomousresourcemanagement.com/" target="_blank" style="color:var(--accent);text-decoration:none">Mason Nguyen · autonomousresourcemanagement.com</a></div>
+        </div>
+      </div>
+
+      <div class="ai-input-bar">
+        <textarea class="ai-input" id="user-input" placeholder="Ask a follow-up or provide more context…" rows="1" onkeydown="handleKey(event)"></textarea>
+        <button class="send-btn" id="send-btn" onclick="sendFollowUp()" disabled>SEND →</button>
+      </div>
+    </section>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-brand" onclick="showPage('home')">
+        <div class="nav-logo-mark"><span></span><span></span><span></span><span></span></div>
+        <span style="font-family:var(--mono);font-weight:700;font-size:0.95rem">blockmachine</span>
+      </div>
+      <div class="footer-tagline">All performance data is public.</div>
+      <div class="footer-email">team@blockmachine.io</div>
+    </div>
+    <div class="footer-links">
+      <div class="footer-link">Bittensor</div>
+      <div class="footer-link">Miners</div>
+      <div class="footer-link">Whitepaper</div>
+      <div class="footer-link" onclick="showPage('docs')">Docs</div>
+      <div class="footer-link">GitHub</div>
+      <div class="footer-link">X (Twitter)</div>
+      <div class="footer-link">Discord</div>
+    </div>
+  </div>
+  <div class="footer-credit">
+    <span>⬡ AI Assistant powered by</span>
+    <a href="https://autonomousresourcemanagement.com/" target="_blank">Mason Nguyen · Autonomous Resource Management</a>
+    <span style="color:var(--border2)">·</span>
+    <span>autonomousresourcemanagement.com</span>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 Blockmachine. Powered by Bittensor.</span>
+    <span style="color:var(--accent)">All performance data is public.</span>
+  </div>
+</footer>
+
+<script>
+// ── AGENTS ──────────────────────────────────────────────────────────────────
+const AGENTS = {
+  integrator: {
+    name: "RPC Integrator Agent", icon: "⚙️",
+    desc: "Generates ready-to-deploy connection code for your language and framework",
+    system: `You are the RPC Integrator Agent for Blockmachine — a fast, verified blockchain RPC platform powered by Bittensor.
+
+Your mission: Help developers connect to Blockmachine's RPC endpoints with minimal friction.
+
+You MUST:
+- Generate production-ready connection code for the developer's specified language/framework (ethers.js, web3.py, Go, Rust, etc.)
+- Include proper Authorization header usage with Bearer token (never hardcode keys — use env vars)
+- Implement exponential backoff for -32029 (rate limit) errors
+- Handle -32021 (invalid key) and -32030 (exhausted RU budget) as terminal errors that surface to a human
+- Show WebSocket and HTTP endpoint variants where relevant
+- Include a brief integration checklist
+
+Base endpoints:
+- HTTP: https://rpc.blockmachine.io
+- WebSocket: wss://rpc.blockmachine.io
+
+Format: Quick Setup (1-minute path), Full Integration Code, Error Handling Guide, Integration Checklist.`
+  },
+  diagnostics: {
+    name: "Node Diagnostics Agent", icon: "🩺",
+    desc: "Analyzes latency, error patterns, and node health from your data",
+    system: `You are the Node Diagnostics Agent for Blockmachine — a fast, verified blockchain RPC platform.
+
+Your mission: Diagnose performance issues, latency spikes, and error patterns for developers using the Blockmachine network.
+
+You MUST:
+- Analyze any latency figures, error codes, or node IDs the user provides
+- Identify likely root causes for common issues (-32029 rate limits, -32021 invalid keys, -32030 budget exhaustion, timeout patterns)
+- Cross-reference with Blockmachine's routing behavior (cheaper+faster miners get more traffic)
+- Provide a prioritized action list (Critical → High → Medium)
+- Suggest monitoring and alerting strategies
+- If given node IDs, explain what the performance data means and what actions to take
+
+Blockmachine error codes:
+- -32029: Rate limit hit → retry with exponential backoff
+- -32021: Invalid API key → terminal, surface to human
+- -32030: RU budget exhausted → terminal, surface to human
+
+Format: Diagnosis Summary, Root Cause Analysis, Action Plan (prioritized), Monitoring Recommendations.`
+  },
+  research: {
+    name: "Chain Research Agent", icon: "🔬",
+    desc: "Answers questions about supported chains, methods, and compatibility",
+    system: `You are the Chain Research Agent for Blockmachine — a fast, verified blockchain RPC platform powered by Bittensor.
+
+Your mission: Answer detailed technical questions about blockchain chains, RPC methods, archive depth, and compatibility.
+
+You MUST:
+- Answer questions about Bittensor (primary chain), Ethereum, BSC, and other EVM-compatible chains
+- Explain RPC methods (eth_call, eth_getLogs, trace_*, debug_*, etc.) and their compute unit costs
+- Clarify archive vs. full node differences and when archive access matters
+- Explain JSON-RPC 2.0 standards and how Blockmachine implements them
+- Compare chain-specific quirks that affect RPC behavior
+- Note that Blockmachine verifies correctness via hash comparison against reference nodes
+
+Current chain support: Bittensor (live), Ethereum + BSC (Phase 5 roadmap).
+
+Format: Direct answer, Technical Details, Code Example (if applicable), Related Methods/Considerations.`
+  },
+  cost: {
+    name: "Cost Optimizer Agent", icon: "💰",
+    desc: "Recommends the right plan and RU budget based on your usage patterns",
+    system: `You are the Cost Optimizer Agent for Blockmachine — a fast, verified blockchain RPC platform.
+
+Your mission: Help developers and teams choose the right plan and optimize their RPC spending.
+
+Blockmachine plans:
+- Free: $0/mo — 10K RU/month, 5K req/min, 1 API key
+- Pro: $25/mo — 20M RU/month, 12K req/min, 3 keys, overages $3/1M RU
+- Business: $125/mo — 100M RU/month, 30K req/min, 5 keys, overages $2/1M RU
+- Enterprise: $999/mo — 1B RU/month, 250K req/min, 10 keys, overages $1/1M RU
+
+You MUST:
+- Analyze the user's described request volume, method types, and rate patterns
+- Calculate estimated monthly RU consumption (simple reads ~1 RU, complex queries ~5-10 RU, archive/trace calls ~20-50 RU)
+- Recommend the most cost-effective plan with headroom
+- Project costs at current and 2x growth
+- Suggest optimization strategies to reduce RU consumption
+- Advise on key scoping for security (especially for AI agents)
+
+Format: Usage Analysis, Plan Recommendation with cost breakdown, Growth Projection, Optimization Tips.`
+  },
+  pipeline: {
+    name: "Full Pipeline", icon: "⚡",
+    desc: "Runs all four agents for a complete integration and optimization assessment",
+    system: `You are the Blockmachine Master Agent — orchestrating a full assessment across all intelligence domains.
+
+Blockmachine is a fast, verified blockchain RPC platform powered by Bittensor. Run a comprehensive assessment covering:
+
+1. **INTEGRATION READINESS** — What does the developer need to connect? What code do they need?
+2. **TECHNICAL HEALTH CHECK** — Common pitfalls, error handling requirements, rate limit strategy
+3. **CHAIN & METHOD GUIDANCE** — Relevant chains and methods for their use case
+4. **COST & PLAN ANALYSIS** — Right plan for their volume with growth projection
+5. **SECURITY CHECKLIST** — API key scoping, env var usage, agent-safe key budgeting
+6. **QUICK-START SUMMARY** — A concise 5-step onboarding checklist
+
+Blockmachine endpoints: https://rpc.blockmachine.io | wss://rpc.blockmachine.io
+Auth: Authorization: Bearer \$BLOCKMACHINE_API_KEY
+
+Be specific, practical, and developer-focused. Include code where it adds value. This is the full onboarding intelligence run.`
+  }
+};
+
+let currentAgent = null, history = [], isRunning = false;
+
+// ── AGENT SELECTION ──────────────────────────────────────────────────────────
+function selectAgent(key) {
+  currentAgent = key; history = [];
+  document.querySelectorAll('.agent-item').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.agent-item').forEach(b => {
+    if (b.getAttribute('onclick')?.includes(`'${key}'`)) b.classList.add('active');
+  });
+  const a = AGENTS[key];
+  document.getElementById('ai-title').textContent = a.icon + ' ' + a.name;
+  document.getElementById('ai-desc').textContent = a.desc;
+  document.getElementById('run-btn').disabled = false;
+  document.getElementById('send-btn').disabled = false;
+  const ca = document.getElementById('chat-area');
+  ca.innerHTML = `<div class="msg"><div class="msg-label"><span>◈</span> SYSTEM</div><div class="msg-bubble system">Agent "${a.name}" ready. Fill in target config and click RUN, or type a question below.</div></div>`;
+}
+
+// ── BUILD PROMPT ─────────────────────────────────────────────────────────────
+function buildPrompt() {
+  const url = document.getElementById('cfg-url').value.trim();
+  const chain = document.getElementById('cfg-chain').value.trim();
+  const stack = document.getElementById('cfg-stack').value.trim();
+  const vol = document.getElementById('cfg-vol').value.trim();
+  const parts = [];
+  if (url) parts.push(`Endpoint/URL: ${url}`);
+  if (chain) parts.push(`Chain: ${chain}`);
+  if (stack) parts.push(`Stack/Framework: ${stack}`);
+  if (vol) parts.push(`Estimated monthly requests: ${vol}`);
+  return parts.length
+    ? parts.join('\n') + '\n\nRun your full analysis now.'
+    : 'Run a comprehensive analysis. Demonstrate your full capabilities with a realistic example.';
+}
+
+// ── RUN ───────────────────────────────────────────────────────────────────────
+async function runAgent() {
+  if (!currentAgent || isRunning) return;
+  history = [];
+  const prompt = buildPrompt();
+  addMsg('user', prompt);
+  await callClaude(prompt);
+}
+
+async function sendFollowUp() {
+  if (!currentAgent || isRunning) return;
+  const el = document.getElementById('user-input');
+  const txt = el.value.trim(); if (!txt) return;
+  el.value = '';
+  addMsg('user', txt);
+  await callClaude(txt);
+}
+
+function handleKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendFollowUp(); } }
+
+// ── MESSAGES ──────────────────────────────────────────────────────────────────
+function addMsg(role, content) {
+  const ca = document.getElementById('chat-area');
+  const es = document.getElementById('empty-state'); if (es) es.remove();
+  const div = document.createElement('div'); div.className = 'msg';
+  const lbl = document.createElement('div');
+  lbl.className = `msg-label ${role === 'assistant' ? 'al' : 'ul'}`;
+  const a = AGENTS[currentAgent];
+  lbl.innerHTML = role === 'assistant' ? `<span>${a.icon}</span> ${a.name.toUpperCase()}` : `<span>▸</span> YOU`;
+  const bub = document.createElement('div');
+  bub.className = `msg-bubble ${role === 'assistant' ? 'agent' : 'user'}`;
+  bub.textContent = content;
+  div.appendChild(lbl); div.appendChild(bub);
+  ca.appendChild(div); ca.scrollTop = ca.scrollHeight;
+  return bub;
+}
+
+function addTyping() {
+  const ca = document.getElementById('chat-area');
+  const div = document.createElement('div'); div.className = 'msg'; div.id = 'typing';
+  const a = AGENTS[currentAgent];
+  div.innerHTML = `<div class="msg-label al"><span>${a.icon}</span> ${a.name.toUpperCase()}</div><div class="typing"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div>`;
+  ca.appendChild(div); ca.scrollTop = ca.scrollHeight;
+}
+function removeTyping() { document.getElementById('typing')?.remove(); }
+
+// ── API CALL ──────────────────────────────────────────────────────────────────
+async function callClaude(msg) {
+  if (isRunning) return; isRunning = true;
+  const rb = document.getElementById('run-btn'), sb = document.getElementById('send-btn');
+  rb.disabled = true; rb.classList.add('running'); rb.textContent = '⟳ RUNNING…'; sb.disabled = true;
+  history.push({ role: 'user', content: msg }); addTyping();
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, system: AGENTS[currentAgent].system, messages: history })
+    });
+    if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || `API error ${res.status}`); }
+    const data = await res.json();
+    const reply = data.content.map(b => b.text || '').join('');
+    history.push({ role: 'assistant', content: reply });
+    removeTyping(); addMsg('assistant', reply);
+  } catch (err) {
+    removeTyping();
+    const ca = document.getElementById('chat-area');
+    ca.innerHTML += `<div class="msg"><div class="msg-label">⚠ ERROR</div><div class="msg-bubble error">${err.message}</div></div>`;
+    ca.scrollTop = ca.scrollHeight;
+  }
+  isRunning = false; rb.disabled = false; rb.classList.remove('running'); rb.textContent = '▶ RUN'; sb.disabled = false;
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────────────────────
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id)?.classList.add('active');
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  const map = { performance:0, technology:1, pricing:2, docs:3, ai:4 };
+  if (map[id] !== undefined) document.querySelectorAll('.nav-link')[map[id]]?.classList.add('active');
+  window.scrollTo(0, 0);
+  document.getElementById('nav-links')?.classList.remove('open');
+  if (id === 'performance') buildNodeTable();
+  initCharts(); setTimeout(revealAll, 50);
+}
+function toggleMobileMenu() { document.getElementById('nav-links')?.classList.toggle('open'); }
+
+// ── REVEAL ────────────────────────────────────────────────────────────────────
+function revealAll() {
+  document.querySelectorAll('.reveal:not(.visible)').forEach((el, i) => {
+    setTimeout(() => el.classList.add('visible'), i * 55);
+  });
+}
+const observer = new IntersectionObserver(e => e.forEach(x => { if (x.isIntersecting) x.target.classList.add('visible'); }), { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+setTimeout(revealAll, 100);
+
+// ── CHARTS ────────────────────────────────────────────────────────────────────
+function buildMiniChart(id, heights) {
+  const c = document.getElementById(id); if (!c) return;
+  c.querySelectorAll('.bar').forEach(b => b.remove());
+  heights.forEach(h => {
+    const bar = document.createElement('div'); bar.className = 'bar';
+    bar.style.height = h + '%'; bar.style.background = `rgba(0,229,160,${0.15 + h / 100 * 0.5})`;
+    c.appendChild(bar);
+  });
+}
+function buildPerfChart() {
+  const c = document.getElementById('perf-chart'); if (!c) return; c.innerHTML = '';
+  const data = [60,55,62,58,70,65,63,68,72,64,60,55,58,62,66,70,64,58,60,65,68,72,66,62,58,65,70,68,62,65,70,68,64,58,60,64,68,70,66,62];
+  data.forEach(h => {
+    const bar = document.createElement('div'); bar.className = 'ic-bar';
+    bar.style.height = h + '%'; bar.style.background = `rgba(0,229,160,${0.15 + h / 100 * 0.6})`;
+    c.appendChild(bar);
+  });
+}
+function initCharts() {
+  const h = []; for (let i = 0; i < 28; i++) h.push(40 + Math.sin(i / 3) * 20 + Math.random() * 15);
+  buildMiniChart('latency-chart', h); buildPerfChart();
+}
+initCharts();
+
+// ── NODE TABLE ────────────────────────────────────────────────────────────────
+const fakeNodes = [
+  ['5CFuHn…bgUXK5','9a95cf…1ea8e8','Healthy','307.99 ms','100%','23.86','85,599','0%'],
+  ['5Cng9D…gpB9Uz','0086a4…46d0e6','Healthy','187.29 ms','100%','42.60','153,030','0%'],
+  ['5Cng9D…gpB9Uz','42ec88…368ac3','Healthy','184.57 ms','100%','43.50','156,193','0%'],
+  ['5Cng9D…gpB9Uz','50b813…489215','Healthy','186.64 ms','100%','42.71','153,343','0%'],
+  ['5Cng9D…gpB9Uz','52137c…16ec4d','Healthy','186.43 ms','100%','42.80','154,241','0%'],
+  ['5Cng9D…gpB9Uz','56c505…d0ddcc','Healthy','184.88 ms','100%','42.96','154,335','0%'],
+  ['5Cng9D…gpB9Uz','834644…4d33e0','Healthy','188.20 ms','100%','42.44','152,373','0%'],
+  ['5Cng9D…gpB9Uz','aa8071…0c4744','Healthy','183.52 ms','100%','42.87','154,169','0%'],
+];
+function buildNodeTable() {
+  const tb = document.getElementById('node-tbody'), pg = document.getElementById('node-paging');
+  if (!tb) return; tb.innerHTML = '';
+  fakeNodes.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td class="node-id">${r[0]}</td><td class="node-id">${r[1]}</td><td class="node-health">${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td><td>${r[6]}</td><td>${r[7]}</td>`;
+    tb.appendChild(tr);
+  });
+  if (pg) { pg.innerHTML = ''; [1,2,3,'…',14].forEach(p => { const b = document.createElement('button'); b.className = 'page-btn' + (p===1?' active':''); b.textContent = p; b.onclick = () => { document.querySelectorAll('.page-btn').forEach(x => x.classList.remove('active')); b.classList.add('active'); }; pg.appendChild(b); }); }
+}
+function setTF(btn, r) { document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); buildPerfChart(); }
+
+// ── COPY ──────────────────────────────────────────────────────────────────────
+function copyCode(btn, id) {
+  const t = document.getElementById(id)?.innerText || '';
+  navigator.clipboard.writeText(t).then(() => { btn.textContent = 'Copied!'; btn.style.color = 'var(--accent)'; setTimeout(() => { btn.textContent = 'Copy'; btn.style.color = ''; }, 2000); });
+}
+
+// ── LIVE TICKER ───────────────────────────────────────────────────────────────
+setInterval(() => {
+  const el = document.getElementById('m-latency'); if (el) el.textContent = Math.round(243 + (Math.random() - 0.5) * 8) + 'ms';
+  const ne = document.getElementById('m-nodes'); if (ne) ne.textContent = 110 + Math.round(Math.random() * 4);
+}, 3000);
+</script>
+</body>
+</html>
